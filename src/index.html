@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'">
+    <title>Pixel Art Tool</title>
+    <link rel="stylesheet" href="styles/main.css">
+</head>
+<body>
+    <div id="app">
+
+        <!-- Top bar -->
+        <div id="topbar">
+            <span class="app-title">PIXEL ART TOOL</span>
+            <div class="topbar-controls">
+                <label>W: <input type="number" id="canvas-w" value="16" min="1" max="128"> px</label>
+                <label>H: <input type="number" id="canvas-h" value="22" min="1" max="128"> px</label>
+                <label>Zoom: <input type="range" id="zoom-slider" min="2" max="24" value="12"> <span id="zoom-label">12×</span></label>
+                <button id="btn-clear">Clear</button>
+                <button id="btn-undo">Undo (Z)</button>
+                <button id="btn-redo">Redo (Y)</button>
+            </div>
+        </div>
+
+        <!-- Main layout -->
+        <div id="main-layout">
+
+            <!-- Toolbar -->
+            <div id="toolbar">
+                <button class="tool-btn active" data-tool="pencil" title="Pencil (B)">✏</button>
+                <button class="tool-btn" data-tool="eraser"  title="Eraser (E)">◻</button>
+                <button class="tool-btn" data-tool="fill"    title="Fill (G)">⬛</button>
+                <button class="tool-btn" data-tool="eyedrop" title="Eyedropper (I)">💧</button>
+                <hr>
+                <div id="current-color-swatch" title="Active color"></div>
+            </div>
+
+            <!-- Drawing canvas area -->
+            <div id="canvas-area">
+                <canvas id="drawCanvas"></canvas>
+            </div>
+
+            <!-- Right panels -->
+            <div id="right-panels">
+
+                <!-- Palette panel -->
+                <div class="panel" id="palette-panel">
+                    <div class="panel-title">PALETTE</div>
+                    <div id="palette-swatches"></div>
+                    <div class="panel-row">
+                        <input type="color" id="color-picker" value="#1A1A1A">
+                        <button id="btn-add-color">+ Add</button>
+                    </div>
+                </div>
+
+                <!-- Reference panel -->
+                <div class="panel" id="reference-panel">
+                    <div class="panel-title">REFERENCE</div>
+                    <div id="reference-img-wrap">
+                        <img id="reference-img" src="" alt="" style="display:none">
+                        <div id="reference-placeholder">No reference loaded</div>
+                    </div>
+                    <button id="btn-load-ref">Load Image</button>
+                </div>
+
+                <!-- AI panel -->
+                <div class="panel" id="ai-panel">
+                    <div class="panel-title">AI GENERATE</div>
+                    <textarea id="ai-prompt" placeholder="Describe the sprite... (e.g. 'stone age cave dweller, side view, holding club')"></textarea>
+                    <div class="panel-row">
+                        <button id="btn-ai-generate">Generate</button>
+                        <span id="ai-status"></span>
+                    </div>
+                </div>
+
+                <!-- Export panel -->
+                <div class="panel" id="export-panel">
+                    <div class="panel-title">EXPORT CODE</div>
+                    <div class="panel-row">
+                        <label>Func: <input type="text" id="func-name" value="_drawSprite" style="width:120px"></label>
+                        <label><input type="checkbox" id="use-loff"> lOff</label>
+                    </div>
+                    <button id="btn-export">Generate pxAt() Code</button>
+                    <button id="btn-copy-code" style="display:none">Copy to Clipboard</button>
+                    <button id="btn-save-png">Save PNG</button>
+                    <textarea id="export-output" readonly placeholder="pxAt() code will appear here..."></textarea>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+
+    <script src="core/palette.js"></script>
+    <script src="core/history.js"></script>
+    <script src="core/canvas.js"></script>
+    <script src="ui/toolbar.js"></script>
+    <script src="ui/palette-panel.js"></script>
+    <script src="ui/reference-panel.js"></script>
+    <script src="ui/output-panel.js"></script>
+    <script src="ai/client.js"></script>
+    <script src="ai/generate.js"></script>
+    <script src="export/exporter.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
