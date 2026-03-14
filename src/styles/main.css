@@ -253,8 +253,9 @@ button {
     border-radius: 2px;
 }
 
-button:hover  { border-color: var(--accent); color: var(--accent); }
-button:active { background: var(--accent-dim); }
+button:hover     { border-color: var(--accent); color: var(--accent); }
+button:active    { background: var(--accent-dim); }
+button:disabled  { opacity: 0.4; cursor: not-allowed; }
 
 input[type="text"] {
     background: var(--bg-control);

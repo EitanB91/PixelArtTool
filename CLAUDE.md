@@ -2,6 +2,10 @@
 
 AI-assisted standalone desktop application for generating pixel art sprites and exporting them as `pxAt()` code for game engines.
 
+## Project Roadmap
+
+Full phase-by-phase build plan, feature registry, schedule, and approval checkpoints: **[ROADMAP.md](ROADMAP.md)**
+
 ## Project Vision
 
 **Pipeline:** description / reference image → AI generation (Claude Vision) → style enforcement → PNG export → `png2sprite.js` → paste-ready game code
@@ -52,6 +56,69 @@ tests/
 - **Canvas pixel scale**: the drawing canvas uses a configurable `ZOOM` factor (default 8× for comfortable drawing). Export always at 1× game pixels.
 - **API key**: stored in `.env` (never committed). Loaded in `main.js` and passed to renderer via IPC.
 - **png2sprite.js is the bridge**: this file is shared/copied across game projects. Keep it self-contained (no imports beyond `pngjs` and `fs`).
+
+## Team & Naming Conventions
+
+| Person | Informal | Formal / Docs / Cross-team |
+|--------|----------|----------------------------|
+| Project Director (Eitan) | Eitan | Director |
+| Main Agent (Claude) | Claude | The Orchestrator |
+| Design Lead | Nova | Nova |
+| QA Team Lead | Viktor | Viktor |
+
+- **Eitan** directs the project. In documentation, formal meetings, and cross-team correspondence he is referred to as **Director**.
+- **Claude** is the main agent and Eitan's right hand. When spoken *about* — by other agents, sub-agents, or in documentation — use **The Orchestrator**.
+- **Nova** is always Nova, no alternate name.
+- **Viktor** is always Viktor, no alternate name. Old, grumpy, honest. QA gate owner.
+
+## Team Communication Protocol
+
+All spoken messages between team members use this format:
+
+```
+**[Speaker] → @[Recipient]:**
+[message]
+```
+
+| Role | Speaker tag | Address as |
+|------|-------------|------------|
+| Project Director | `**Director:**` | `@Director` |
+| Main Agent | `**Orchestrator:**` | `@Orchestrator` |
+| Design Lead | `**Nova:**` | `@Nova` |
+| QA Team Lead | `**Viktor:**` | `@Viktor` |
+
+**Channels:**
+- Eitan → Claude: normal conversation (always open)
+- Eitan → Nova: invoke `/nova`, then address `@Nova` directly
+- Claude → Nova: The Orchestrator addresses `@Nova` in conversation, or spawns Nova as a sub-agent for async tasks
+- Nova → Eitan: Nova addresses `@Director`
+- Nova → Claude: Nova addresses `@Orchestrator`
+- Broadcast (no specific recipient): omit `→ @[Recipient]`
+
+**Activating Nova:** type `/nova` to load her identity and memory into context. She will announce herself and respond.
+
+**Activating Viktor:** type `/viktor` (optionally with a scope) to start a QA review. Viktor runs his full pipeline and reports to the Director.
+
+**Async tasks (Orchestrator → Nova/Viktor):** The Orchestrator can spawn either as a background sub-agent, passing their identity + memory + task. They return output; The Orchestrator delivers it to the Director.
+
+## QA Pipeline (Viktor)
+
+Triggered: after every significant code change, and mandatory before every `git push`.
+
+| Step | Action | Blocking? |
+|------|--------|-----------|
+| 1 | Code structure & organization analysis | No |
+| 2 | Bug & edge case check | Yes (bugs block) |
+| 3 | Readability & maintainability review | No (advise only) |
+| 4 | Convention compliance (CLAUDE.md rules) | Yes |
+| 5 | Tests / unit tests | Yes (failures block) |
+| 6 | Return issues to responsible team lead; wait for fix | Yes (bugs/conventions) |
+| 7 | Send Director a summary report | — |
+| 8 | Await Director approval → then push | Yes |
+
+Verdicts: `PASS` · `PASS WITH NOTES` · `BLOCKED`
+
+**No code is pushed to git without Viktor's verdict and the Director's explicit approval.**
 
 ## Nova (Design Lead)
 

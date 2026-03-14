@@ -85,8 +85,73 @@ ipcMain.handle('copy-to-clipboard', function(event, text) {
     return true;
 });
 
-// ── IPC: API key ──────────────────────────────────────────────────────────────
+// ── IPC: Claude API (key never leaves main process) ───────────────────────────
 
-ipcMain.handle('get-api-key', function() {
-    return process.env.ANTHROPIC_API_KEY || null;
+var CLAUDE_MODEL   = 'claude-sonnet-4-6';
+var ANTHROPIC_VER  = '2023-06-01';
+
+ipcMain.handle('check-api-key', function() {
+    return !!process.env.ANTHROPIC_API_KEY;
+});
+
+ipcMain.handle('call-claude', async function(event, messages, maxTokens, system) {
+    var apiKey = process.env.ANTHROPIC_API_KEY;
+    if (!apiKey) throw new Error('No ANTHROPIC_API_KEY. Add it to .env');
+
+    var body = {
+        model:      CLAUDE_MODEL,
+        max_tokens: maxTokens || 1024,
+        messages:   messages
+    };
+    if (system) body.system = system;
+
+    var response = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: {
+            'Content-Type':      'application/json',
+            'x-api-key':         apiKey,
+            'anthropic-version': ANTHROPIC_VER
+        },
+        body: JSON.stringify(body)
+    });
+
+    if (!response.ok) {
+        var err = await response.text();
+        throw new Error('API error ' + response.status + ': ' + err);
+    }
+
+    var data = await response.json();
+    return data.content[0].text;
+});
+
+// ── IPC: Reference image tracing (algorithmic, no AI) ─────────────────────────
+
+ipcMain.handle('trace-reference', function(event, base64, ext, dstW, dstH) {
+    var PNG    = require('pngjs').PNG;
+    var { nativeImage } = require('electron');
+
+    // Decode via nativeImage (handles PNG, JPEG, GIF) then export to PNG for pngjs
+    var mime   = (ext === 'jpg') ? 'jpeg' : ext;
+    var img    = nativeImage.createFromDataURL('data:image/' + mime + ';base64,' + base64);
+    var size   = img.getSize();
+    var srcW   = size.width;
+    var srcH   = size.height;
+    var parsed = PNG.sync.read(img.toPNG());
+    var src    = parsed.data; // RGBA Buffer
+
+    // Nearest-neighbor resize → preserves hard pixel edges (no blur)
+    var dst = new Array(dstW * dstH * 4);
+    for (var y = 0; y < dstH; y++) {
+        for (var x = 0; x < dstW; x++) {
+            var sx = Math.floor(x * srcW / dstW);
+            var sy = Math.floor(y * srcH / dstH);
+            var si = (sy * srcW + sx) * 4;
+            var di = (y  * dstW + x)  * 4;
+            dst[di]     = src[si];
+            dst[di + 1] = src[si + 1];
+            dst[di + 2] = src[si + 2];
+            dst[di + 3] = src[si + 3];
+        }
+    }
+    return dst;
 });

@@ -1,44 +1,22 @@
 'use strict';
 
-// AI Client — thin wrapper around the Anthropic SDK via fetch
-// (Electron renderer cannot require() native modules, so we call the API directly via fetch)
+// AI Client — thin IPC wrapper. All API calls happen in main.js.
+// The renderer never sees the API key.
 
 var AIClient = (function() {
-    var _apiKey = null;
+    var _hasKey = false;
 
     async function init() {
-        _apiKey = await window.api.getApiKey();
-        return !!_apiKey;
+        _hasKey = await window.api.checkApiKey();
+        return _hasKey;
     }
 
-    async function chat(messages, maxTokens) {
-        if (!_apiKey) throw new Error('No ANTHROPIC_API_KEY. Add it to .env');
-        maxTokens = maxTokens || 1024;
-
-        var response = await fetch('https://api.anthropic.com/v1/messages', {
-            method: 'POST',
-            headers: {
-                'Content-Type':      'application/json',
-                'x-api-key':         _apiKey,
-                'anthropic-version': '2023-06-01'
-            },
-            body: JSON.stringify({
-                model:      'claude-opus-4-6',
-                max_tokens: maxTokens,
-                messages:   messages
-            })
-        });
-
-        if (!response.ok) {
-            var err = await response.text();
-            throw new Error('API error ' + response.status + ': ' + err);
-        }
-
-        var data = await response.json();
-        return data.content[0].text;
+    async function chat(messages, maxTokens, system) {
+        if (!_hasKey) throw new Error('No ANTHROPIC_API_KEY. Add it to .env');
+        return window.api.callClaude(messages, maxTokens || 1024, system || null);
     }
 
-    function hasKey() { return !!_apiKey; }
+    function hasKey() { return _hasKey; }
 
     return { init, chat, hasKey };
 })();

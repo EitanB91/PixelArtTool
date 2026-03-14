@@ -11,12 +11,14 @@ var OutputPanel = (function() {
             document.getElementById('btn-copy-code').style.display = 'inline-block';
         });
 
+        var _copyTimer = null;
         document.getElementById('btn-copy-code').addEventListener('click', async function() {
             var code = document.getElementById('export-output').value;
             await window.api.copyToClipboard(code);
             this.textContent = 'Copied!';
             var btn = this;
-            setTimeout(function() { btn.textContent = 'Copy to Clipboard'; }, 1500);
+            clearTimeout(_copyTimer);
+            _copyTimer = setTimeout(function() { btn.textContent = 'Copy to Clipboard'; }, 1500);
         });
 
         document.getElementById('btn-save-png').addEventListener('click', async function() {

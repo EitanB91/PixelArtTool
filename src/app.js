@@ -25,17 +25,36 @@ window.addEventListener('DOMContentLoaded', async function() {
     aiStatus.textContent = hasKey ? 'API key loaded' : 'No API key (.env)';
 
     // AI generate button
-    document.getElementById('btn-ai-generate').addEventListener('click', async function() {
+    var btnGenerate = document.getElementById('btn-ai-generate');
+    btnGenerate.addEventListener('click', async function() {
         var prompt = document.getElementById('ai-prompt').value.trim();
         if (!prompt) { aiStatus.textContent = 'Enter a description first'; return; }
         var w = PixelCanvas.getWidth();
         var h = PixelCanvas.getHeight();
-        await AIGenerate.run(
-            prompt, w, h,
-            AppState.referenceBase64,
-            AppState.referenceExt,
-            aiStatus
-        );
+        btnGenerate.disabled = true;
+        try {
+            await AIGenerate.run(
+                prompt, w, h,
+                AppState.referenceBase64,
+                AppState.referenceExt,
+                aiStatus
+            );
+        } finally {
+            btnGenerate.disabled = false;
+        }
+    });
+
+    // Trace reference button
+    var btnTrace = document.getElementById('btn-trace-ref');
+    btnTrace.addEventListener('click', async function() {
+        var w = PixelCanvas.getWidth();
+        var h = PixelCanvas.getHeight();
+        btnTrace.disabled = true;
+        try {
+            await AIGenerate.trace(w, h, AppState.referenceBase64, AppState.referenceExt, aiStatus);
+        } finally {
+            btnTrace.disabled = false;
+        }
     });
 
     // Keyboard shortcuts

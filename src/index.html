@@ -61,7 +61,10 @@
                         <img id="reference-img" src="" alt="" style="display:none">
                         <div id="reference-placeholder">No reference loaded</div>
                     </div>
-                    <button id="btn-load-ref">Load Image</button>
+                    <div class="panel-row">
+                        <button id="btn-load-ref">Load Image</button>
+                        <button id="btn-trace-ref" title="Algorithmically resize + trace reference onto canvas">Trace</button>
+                    </div>
                 </div>
 
                 <!-- AI panel -->
@@ -71,6 +74,11 @@
                     <div class="panel-row">
                         <button id="btn-ai-generate">Generate</button>
                         <span id="ai-status"></span>
+                    </div>
+                    <div class="panel-row">
+                        <label title="Automatically reduce palette to 6 colors after generation">
+                            <input type="checkbox" id="enforce-toggle" checked> Enforce style
+                        </label>
                     </div>
                 </div>
 
@@ -101,6 +109,7 @@
     <script src="ui/output-panel.js"></script>
     <script src="ai/client.js"></script>
     <script src="ai/generate.js"></script>
+    <script src="ai/enforce.js"></script>
     <script src="export/exporter.js"></script>
     <script src="app.js"></script>
 </body>

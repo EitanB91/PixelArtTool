@@ -41,8 +41,8 @@ var Toolbar = (function() {
     }
 
     function _resizeCanvas() {
-        var w = parseInt(document.getElementById('canvas-w').value) || 16;
-        var h = parseInt(document.getElementById('canvas-h').value) || 22;
+        var w = Math.max(1, Math.min(128, parseInt(document.getElementById('canvas-w').value) || 16));
+        var h = Math.max(1, Math.min(128, parseInt(document.getElementById('canvas-h').value) || 22));
         PixelCanvas.resize(w, h);
     }
 

@@ -6,6 +6,11 @@ var PalettePanel = (function() {
         var btnAdd  = document.getElementById('btn-add-color');
 
         btnAdd.addEventListener('click', function() {
+            if (Palette.getColors().length >= 8) {
+                btnAdd.textContent = 'Palette full!';
+                setTimeout(function() { btnAdd.textContent = '+'; }, 1500);
+                return;
+            }
             Palette.addColor(picker.value);
             refresh();
             Toolbar.refreshColorSwatch();

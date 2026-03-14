@@ -205,5 +205,5 @@ var PixelCanvas = (function() {
         return offscreen.toDataURL('image/png').split(',')[1];
     }
 
-    return { init, resize, setZoom, clear, applyHistory, getPixels, getWidth, getHeight, toPngBase64, _redraw };
+    return { init, resize, setZoom, clear, applyHistory, getPixels, getWidth, getHeight, toPngBase64, redraw: _redraw };
 })();
