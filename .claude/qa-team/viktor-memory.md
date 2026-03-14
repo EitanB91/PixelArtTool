@@ -2,9 +2,10 @@
 
 ## Project Status
 - Scaffolded: 2026-03-13
-- Implementation: ~95% complete as of 2026-03-14
-- Tests: Jest configured in `package.json`, zero test files written (OPEN — blocking Phase 3)
-- Last pushed commit: `000dc92` (README) — Phase 1+2 work at `c9df7b6`
+- Implementation: 100% MVP complete as of 2026-03-14
+- Tests: 42 passing (palette, history, exporter, enforce) ✅
+- Phase 3: COMPLETE ✅ — next is Phase 4 (MVP QA Gate & First Push)
+- Last pushed commit: `3fce7a4` (chain-of-thought + compaction updates)
 
 ## Phase 0.3 Pre-Audit — Full Findings (2026-03-14)
 
@@ -68,6 +69,7 @@
 |------|-------|---------|-------|
 | 2026-03-14 | Phase 2 + enforce.js + Trace Reference (first full run) | PASS WITH NOTES | 2 bugs found+fixed in-session; 4 advisories noted |
 | 2026-03-14 | Trace Reference fixes (CSP, auto-size, clearReference) | PASS WITH NOTES | 0 bugs; advisories all resolved same session |
+| 2026-03-14 | Phase 3 — full codebase convention audit + test suite | PASS | 1 blocking fix (P3-A1); 42 tests written and passing |
 
 ## Chain-of-Thought Prompt Change (2026-03-14)
 - `generate.js` system prompt updated: model now writes a region plan before outputting JSON
@@ -77,8 +79,33 @@
 - Decision: AI generation scoped to simple sprites for MVP. Complex characters → Trace workflow.
 - Option F (image gen API → Trace) added to ROADMAP as O8 — post-MVP, pending Director funding
 
+## Phase 3 QA Run (2026-03-14) — PASS ✅
+
+**Scope:** Full codebase convention audit + test suite creation
+**Blocking items found:** 1 (P3-A1)
+**Blocking items resolved:** 1 ✅
+
+| # | File | Issue | Status |
+|---|------|-------|--------|
+| P3-A1 | `src/ai/enforce.js:72` | `var i` declared twice in `reduce()` — second loop used `i` instead of `j` | ✅ Fixed |
+
+**Advisories (non-blocking, deferred to Phase 6):**
+
+| # | File | Item |
+|---|------|------|
+| P3-A2 | `src/core/canvas.js` | `mousedown` pushes history for eyedropper even though canvas doesn't change |
+| P3-A3 | `src/main.js` | `trace-reference` handler has no `try/catch` — raw pngjs error reaches user |
+
+**Tests written:**
+- `tests/palette.test.js` — 10 tests ✅
+- `tests/history.test.js` — 16 tests ✅
+- `tests/exporter.test.js` — 9 tests ✅
+- `tests/enforce.test.js` — 7 tests ✅
+- **Total: 42 tests, 4 suites, 0 failures**
+
 ## Viktor's Standing Notes
-- Tests: Phase 3 is the gate. Until then, `npm test` exits code 1. This is expected but not acceptable forever.
+- Tests: DONE. `npm test` → 42 passing. Phase 3 gate cleared.
 - `png2sprite.js` is shared with other projects — flag any external import additions immediately.
 - API key handling: confirmed secure — key stays in main process, renderer gets only boolean + results.
 - A10 (greedy rect duplication) deferred to post-MVP O7.
+- P3-A2, P3-A3 deferred to Phase 6.

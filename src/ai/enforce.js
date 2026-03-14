@@ -69,15 +69,15 @@ var AIEnforce = (function() {
 
         // Remap pixels not in the kept set to their nearest kept color
         var changed = false;
-        for (var i = 0; i < pixels.length; i += 4) {
-            if (pixels[i + 3] < 128) continue;
-            var hex = _rgbToHex(pixels[i], pixels[i + 1], pixels[i + 2]);
+        for (var j = 0; j < pixels.length; j += 4) {
+            if (pixels[j + 3] < 128) continue;
+            var hex = _rgbToHex(pixels[j], pixels[j + 1], pixels[j + 2]);
             if (keptSet[hex]) continue;
 
-            var nearest = _nearestColor(pixels[i], pixels[i + 1], pixels[i + 2], keptRgb);
-            pixels[i]     = nearest[0];
-            pixels[i + 1] = nearest[1];
-            pixels[i + 2] = nearest[2];
+            var nearest = _nearestColor(pixels[j], pixels[j + 1], pixels[j + 2], keptRgb);
+            pixels[j]     = nearest[0];
+            pixels[j + 1] = nearest[1];
+            pixels[j + 2] = nearest[2];
             changed = true;
         }
 

@@ -47,11 +47,9 @@ window.addEventListener('DOMContentLoaded', async function() {
     // Trace reference button
     var btnTrace = document.getElementById('btn-trace-ref');
     btnTrace.addEventListener('click', async function() {
-        var w = PixelCanvas.getWidth();
-        var h = PixelCanvas.getHeight();
         btnTrace.disabled = true;
         try {
-            await AIGenerate.trace(w, h, AppState.referenceBase64, AppState.referenceExt, aiStatus);
+            await AIGenerate.trace(AppState.referenceBase64, AppState.referenceExt, aiStatus);
         } finally {
             btnTrace.disabled = false;
         }

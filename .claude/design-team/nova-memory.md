@@ -22,7 +22,7 @@ Pipeline: description + reference image → AI generation / Trace → style enfo
 - [x] Style enforcement — enforce.js complete (palette reduction, auto-enforce with toggle)
 - [x] AI generation quality — combined system prompt (Nova artistic + Orchestrator format) + chain-of-thought planning
 - [x] Trace Reference — algorithmic nearest-neighbor resize via nativeImage+pngjs, auto-size to native dims
-- [ ] Unit tests — tests/ empty (Phase 3)
+- [x] Unit tests — 42 tests passing (palette, history, exporter, enforce) ✅ Phase 3 complete
 
 ## Core Tool Features — Final MVP Shape
 1. **Drawing canvas** — zoom 2×–24×, pencil/eraser/fill/eyedropper, 50-step undo/redo
@@ -64,8 +64,8 @@ Approved by Director 2026-03-14.
 Approved by Director 2026-03-14.
 
 ## Pending Work
-- Phase 3: Unit tests (Viktor defines criteria, Orchestrator writes)
-- Phase 3: Convention hardening (Activity 3.5 advisories — all minor)
-- Phase 4: MVP QA gate + first versioned push
+- ~~Phase 3: Unit tests~~ ✅ Done
+- ~~Phase 3: Convention hardening~~ ✅ Done
+- **Phase 4 (NEXT):** MVP QA gate + first versioned push (Viktor report → Director approval → tag v0.1.0-mvp)
 - Phase 5: Docs (USAGE.md, ARCHITECTURE.md)
 - Post-MVP: Option F (image generation API → Trace pipeline)
