@@ -2,7 +2,7 @@
 
 // AI Enforce — post-generation style enforcement.
 // reduce():        palette reduction via nearest-neighbor Euclidean RGB merging.
-// detectOutline(): stub — will be implemented in Phase 6 (O1).
+// detectOutline(): boundary pixel detection — sets outline to darkest palette color (O1).
 // enforce():       entry point called after AI generation.
 
 var AIEnforce = (function() {
@@ -85,9 +85,57 @@ var AIEnforce = (function() {
     }
 
     // detectOutline(pixels, w, h)
-    // Stub — Phase 6 (O1). Will detect boundary pixels and enforce outline color.
+    // Finds every opaque pixel that has at least one transparent neighbor (boundary pixel)
+    // and sets it to palette[0] — the darkest outline color.
+    // Modifies pixels in-place. Returns true if any pixels were changed.
     function detectOutline(pixels, w, h) {
-        // Not yet implemented
+        // Collect the current palette by scanning opaque pixels
+        var colorMap = {};
+        for (var i = 0; i < pixels.length; i += 4) {
+            if (pixels[i + 3] < 128) continue;
+            colorMap[_rgbToHex(pixels[i], pixels[i + 1], pixels[i + 2])] = true;
+        }
+        var palette = Object.keys(colorMap);
+        if (palette.length === 0) return false;
+
+        // Sort to find the darkest color (lowest R+G+B sum = darkest)
+        palette.sort(function(a, b) {
+            var ra = _hexToRgb(a), rb = _hexToRgb(b);
+            return (ra[0] + ra[1] + ra[2]) - (rb[0] + rb[1] + rb[2]);
+        });
+        var outlineRgb = _hexToRgb(palette[0]);
+
+        var changed = false;
+        for (var y = 0; y < h; y++) {
+            for (var x = 0; x < w; x++) {
+                var idx = (y * w + x) * 4;
+                if (pixels[idx + 3] < 128) continue; // skip transparent
+
+                // Check 4-directional neighbors for transparency
+                var isBoundary = false;
+                var neighbors = [[x-1,y],[x+1,y],[x,y-1],[x,y+1]];
+                for (var n = 0; n < 4; n++) {
+                    var nx = neighbors[n][0], ny = neighbors[n][1];
+                    if (nx < 0 || ny < 0 || nx >= w || ny >= h) {
+                        isBoundary = true; // edge of canvas = boundary
+                        break;
+                    }
+                    var ni = (ny * w + nx) * 4;
+                    if (pixels[ni + 3] < 128) { isBoundary = true; break; }
+                }
+
+                if (!isBoundary) continue;
+                if (pixels[idx]     === outlineRgb[0] &&
+                    pixels[idx + 1] === outlineRgb[1] &&
+                    pixels[idx + 2] === outlineRgb[2]) continue; // already outline color
+
+                pixels[idx]     = outlineRgb[0];
+                pixels[idx + 1] = outlineRgb[1];
+                pixels[idx + 2] = outlineRgb[2];
+                changed = true;
+            }
+        }
+        return changed;
     }
 
     // enforce(pixels, w, h, statusEl)
@@ -98,12 +146,17 @@ var AIEnforce = (function() {
         var toggle = document.getElementById('enforce-toggle');
         if (toggle && !toggle.checked) return;
 
-        var changed = reduce(pixels);
-        if (changed) {
+        var reducedChanged = reduce(pixels);
+        var outlineChanged = detectOutline(pixels, w, h);
+
+        if (reducedChanged || outlineChanged) {
             History.push(pixels);
             PixelCanvas.redraw();
             if (statusEl) {
-                statusEl.textContent += ' · palette enforced';
+                var note = [];
+                if (reducedChanged) note.push('palette enforced');
+                if (outlineChanged) note.push('outline applied');
+                statusEl.textContent += ' · ' + note.join(' · ');
             }
         }
     }

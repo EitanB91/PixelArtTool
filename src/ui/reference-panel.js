@@ -16,6 +16,24 @@ var ReferencePanel = (function() {
             // Store base64 for AI panel use
             AppState.referenceBase64 = result.base64;
             AppState.referenceExt    = ext;
+            document.getElementById('btn-extract-palette').disabled = false;
+        });
+
+        document.getElementById('btn-extract-palette').addEventListener('click', async function() {
+            if (!AppState.referenceBase64) return;
+            var btn = this;
+            btn.disabled = true;
+            try {
+                var colors = await window.api.extractPalette(AppState.referenceBase64, AppState.referenceExt || 'png');
+                Palette.reset();
+                colors.forEach(function(hex) { Palette.addColor(hex); });
+                if (window.PalettePanel) PalettePanel.refresh();
+                if (window.Toolbar) Toolbar.refreshColorSwatch();
+            } catch(e) {
+                console.error('Extract palette failed:', e);
+            } finally {
+                btn.disabled = false;
+            }
         });
     }
 
@@ -27,6 +45,7 @@ var ReferencePanel = (function() {
         img.removeAttribute('src');
         img.style.display = 'none';
         placeholder.style.display = '';
+        document.getElementById('btn-extract-palette').disabled = true;
     }
 
     return { init, clearReference };

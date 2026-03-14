@@ -16,6 +16,14 @@
             <div class="topbar-controls">
                 <label>W: <input type="number" id="canvas-w" value="16" min="1" max="128"> px</label>
                 <label>H: <input type="number" id="canvas-h" value="22" min="1" max="128"> px</label>
+                <select id="size-preset" title="Dimension presets">
+                    <option value="">Custom</option>
+                    <option value="16x22" selected>16×22 (player)</option>
+                    <option value="16x16">16×16</option>
+                    <option value="8x8">8×8</option>
+                    <option value="32x32">32×32</option>
+                    <option value="64x64">64×64</option>
+                </select>
                 <label>Zoom: <input type="range" id="zoom-slider" min="2" max="24" value="12"> <span id="zoom-label">12×</span></label>
                 <button id="btn-clear">Clear</button>
                 <button id="btn-undo">Undo (Z)</button>
@@ -60,6 +68,9 @@
                     <div id="reference-img-wrap">
                         <img id="reference-img" src="" alt="" style="display:none">
                         <div id="reference-placeholder">No reference loaded</div>
+                    </div>
+                    <div class="panel-row">
+                        <button id="btn-extract-palette" disabled title="Extract dominant colors from reference image into palette">Extract Palette</button>
                     </div>
                     <div class="panel-row">
                         <button id="btn-load-ref">Load Image</button>

@@ -72,6 +72,16 @@ body {
 
 .topbar-controls input[type="range"] { width: 80px; accent-color: var(--accent); }
 
+.topbar-controls select {
+    background: var(--bg-control);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 2px 4px;
+    font-family: inherit;
+    font-size: 11px;
+    cursor: pointer;
+}
+
 /* ── Main layout ───────────────────────────────────────────────────────────── */
 
 #main-layout {

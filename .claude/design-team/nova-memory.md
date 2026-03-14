@@ -63,9 +63,39 @@ Approved by Director 2026-03-14.
 **Auto-enforce after AI generation, with artist toggle to disable. Trace skips enforce entirely.**
 Approved by Director 2026-03-14.
 
+## Decided: Phase 6 Feature Designs (2026-03-15) — all approved by Director
+
+### O1 — Outline Detection
+- Runs inside `enforce()` after `reduce()`, same artist toggle — no new UI
+- Boundary pixel = opaque pixel with ≥1 transparent neighbor → set to `palette[0]`
+- Only runs after reduce() so outline uses final palette
+- Status: appends `· outline applied` when pixels changed
+- Approved 2026-03-15
+
+### O2 — Dimension Presets
+- `<select>` dropdown in topbar, right after H input
+- Presets: Custom | 16×22 (player) | 16×16 | 8×8 | 32×32 | 64×64
+- Selecting preset → sets W+H inputs → triggers resize; manual edit → snaps to Custom
+- Approved 2026-03-15
+
+### O3 — Auto-Palette Extraction
+- "Extract Palette" button in reference panel, full-width row above Load/Trace row
+- Disabled when no reference loaded
+- On click: IPC `extract-palette` → nativeImage+pngjs → top N (max 8) colors by frequency → replaces palette
+- Status note: `"Extracted N colors from reference"`
+- Explicit action only — does NOT auto-run on image load
+- Approved 2026-03-15
+
+### O5 — Distribution Package
+- electron-builder config for Windows (NSIS installer + portable)
+- No UI decisions needed
+- Approved 2026-03-15
+
 ## Pending Work
 - ~~Phase 3: Unit tests~~ ✅ Done
 - ~~Phase 3: Convention hardening~~ ✅ Done
-- **Phase 4 (NEXT):** MVP QA gate + first versioned push (Viktor report → Director approval → tag v0.1.0-mvp)
-- Phase 5: Docs (USAGE.md, ARCHITECTURE.md)
+- ~~Phase 4: MVP QA gate~~ ✅ Done — v0.1.0-mvp tagged + pushed 2026-03-15
+- Phase 5: Docs (USAGE.md, ARCHITECTURE.md) — deferred, Director moved straight to Phase 6
+- **Phase 6 (IN PROGRESS):** O1 ✅ designed | O2 ✅ designed | O3 ✅ designed | O5 ✅ designed — implementing
 - Post-MVP: Option F (image generation API → Trace pipeline)
+- Post-v0.2.0: O6 Animation frames sprint (Director confirmed as next major sprint)

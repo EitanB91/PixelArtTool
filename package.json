@@ -8,7 +8,8 @@
     "dev": "electron . --dev",
     "build": "electron-builder",
     "test": "jest --testPathPattern=tests/",
-    "convert": "node tools/png2sprite.js"
+    "convert": "node tools/png2sprite.js",
+    "icon": "node tools/generate-icon.js"
   },
   "keywords": ["pixel-art", "sprite", "game-dev", "ai", "electron"],
   "author": "",
@@ -29,7 +30,23 @@
     },
     "files": [
       "src/**/*",
-      "tools/**/*"
-    ]
+      "tools/**/*",
+      "node_modules/**/*",
+      "package.json"
+    ],
+    "win": {
+      "target": [
+        { "target": "nsis",     "arch": ["x64"] },
+        { "target": "portable", "arch": ["x64"] }
+      ],
+      "icon": "assets/icon.ico"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Pixel Art Tool"
+    }
   }
 }

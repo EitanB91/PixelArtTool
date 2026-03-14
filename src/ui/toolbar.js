@@ -35,8 +35,26 @@ var Toolbar = (function() {
         });
 
         // Canvas size
-        document.getElementById('canvas-w').addEventListener('change', _resizeCanvas);
-        document.getElementById('canvas-h').addEventListener('change', _resizeCanvas);
+        document.getElementById('canvas-w').addEventListener('change', function() {
+            document.getElementById('size-preset').value = '';
+            _resizeCanvas();
+        });
+        document.getElementById('canvas-h').addEventListener('change', function() {
+            document.getElementById('size-preset').value = '';
+            _resizeCanvas();
+        });
+
+        // Dimension presets
+        document.getElementById('size-preset').addEventListener('change', function() {
+            var val = this.value;
+            if (!val) return;
+            var parts = val.split('x');
+            var w = parseInt(parts[0]);
+            var h = parseInt(parts[1]);
+            document.getElementById('canvas-w').value = w;
+            document.getElementById('canvas-h').value = h;
+            PixelCanvas.resize(w, h);
+        });
 
         refreshColorSwatch();
     }

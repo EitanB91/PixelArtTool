@@ -125,6 +125,31 @@ ipcMain.handle('call-claude', async function(event, messages, maxTokens, system)
     return data.content[0].text;
 });
 
+// ── IPC: Palette extraction from reference image ──────────────────────────────
+
+ipcMain.handle('extract-palette', function(event, base64, ext) {
+    var mime   = (ext === 'jpg') ? 'jpeg' : ext;
+    var img    = nativeImage.createFromDataURL('data:image/' + mime + ';base64,' + base64);
+    var parsed = PNG.sync.read(img.toPNG());
+    var src    = parsed.data; // RGBA Buffer
+
+    // Count opaque pixel color frequencies
+    var colorMap = {};
+    for (var i = 0; i < src.length; i += 4) {
+        if (src[i + 3] < 128) continue;
+        var r   = src[i],  g = src[i + 1],  b = src[i + 2];
+        var hex = '#' +
+            ('0' + r.toString(16)).slice(-2).toUpperCase() +
+            ('0' + g.toString(16)).slice(-2).toUpperCase() +
+            ('0' + b.toString(16)).slice(-2).toUpperCase();
+        colorMap[hex] = (colorMap[hex] || 0) + 1;
+    }
+
+    var colors = Object.keys(colorMap);
+    colors.sort(function(a, b) { return colorMap[b] - colorMap[a]; });
+    return colors.slice(0, 8); // top 8 by frequency
+});
+
 // ── IPC: Reference image tracing (algorithmic, no AI) ─────────────────────────
 
 ipcMain.handle('trace-reference', function(event, base64, ext) {
