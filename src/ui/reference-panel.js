@@ -13,12 +13,21 @@ var ReferencePanel = (function() {
             img.src = 'data:image/' + ext + ';base64,' + result.base64;
             img.style.display = 'block';
             placeholder.style.display = 'none';
-            console.log('[ReferencePanel] Loaded image:', result.path, 'ext:', ext, 'bytes:', result.base64.length);
             // Store base64 for AI panel use
             AppState.referenceBase64 = result.base64;
             AppState.referenceExt    = ext;
         });
     }
 
-    return { init };
+    function clearReference() {
+        AppState.referenceBase64 = null;
+        AppState.referenceExt    = null;
+        var img = document.getElementById('reference-img');
+        var placeholder = document.getElementById('reference-placeholder');
+        img.removeAttribute('src');
+        img.style.display = 'none';
+        placeholder.style.display = '';
+    }
+
+    return { init, clearReference };
 })();

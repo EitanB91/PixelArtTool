@@ -12,6 +12,7 @@ var Toolbar = (function() {
 
         document.getElementById('btn-clear').addEventListener('click', function() {
             PixelCanvas.clear();
+            ReferencePanel.clearReference();
         });
 
         document.getElementById('btn-undo').addEventListener('click', function() {

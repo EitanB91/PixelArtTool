@@ -33,10 +33,26 @@ drawing the idea of something. Every pixel must earn its place.
 
 Now translate that artistic thinking into the following exact structure:
 
-── OUTPUT FORMAT ─────────────────────────────────────────────────────────────
+── STEP 1: PLAN (required before drawing) ────────────────────────────────────
 
-Return ONLY a valid JSON object. No explanation. No markdown fences. No text before
-or after. The entire response must be parseable by JSON.parse().
+Before outputting any JSON, write a short sprite plan. Map out the major regions
+of the canvas by row range, what they represent, and which palette colors they use.
+This forces you to commit to the layout before placing individual pixels.
+
+Example plan for a 16×22 cave dweller:
+rows 0–4:   black hair, rounded top, outline on edges
+rows 5–7:   face, skin tone, dark eyes at row 6 cols 5–6 and 9–10
+rows 8–15:  torso, skin + mid-shadow on left side, slight rightward lean
+rows 16–19: loincloth, brown fur, outline bottom edge
+rows 20–22: legs, skin tone, right leg forward for running pose
+outline:    palette[0] on every sprite boundary pixel
+palette:    ["#1A1A1A", "#D4935A", "#A0663A", "#F0C080", "#6B3A1F"]
+
+Write your plan in plain text, then immediately follow it with the JSON.
+
+── STEP 2: OUTPUT ────────────────────────────────────────────────────────────
+
+Immediately after your plan, output the JSON object. No markdown fences around it.
 
 Schema:
 {
@@ -83,19 +99,25 @@ One-shot example (4×4 sprite, 3 colors):
             text: 'Sprite description: ' + prompt + '\nSprite size: ' + w + '×' + h + ' pixels.'
         });
 
-        // Adaptive maxTokens: each cell ~4 chars + palette + structure overhead
-        var maxTokens = Math.min(4096, Math.max(1024, w * h * 6 + 512));
+        // Adaptive maxTokens: grid cells ~6 chars each + plan text overhead (~200 tokens)
+        var maxTokens = Math.min(4096, Math.max(1024, w * h * 6 + 712));
 
         try {
             var responseText = await AIClient.chat([
                 { role: 'user', content: userContent }
             ], maxTokens, SYSTEM_PROMPT);
 
-            // Strip markdown fences if the model wrapped the JSON anyway
+            // Strip markdown fences if present
             var cleaned = responseText.trim();
-            if (cleaned.startsWith('```')) {
-                cleaned = cleaned.replace(/^```[a-z]*\n?/, '').replace(/```$/, '').trim();
+            if (cleaned.includes('```')) {
+                cleaned = cleaned.replace(/```[a-z]*\n?/g, '').trim();
             }
+
+            // Extract JSON — skip the chain-of-thought plan that precedes it
+            var jsonStart = cleaned.indexOf('{');
+            if (jsonStart > 0) cleaned = cleaned.slice(jsonStart);
+            var jsonEnd = cleaned.lastIndexOf('}');
+            if (jsonEnd !== -1 && jsonEnd < cleaned.length - 1) cleaned = cleaned.slice(0, jsonEnd + 1);
 
             var parsed = JSON.parse(cleaned);
 
@@ -177,15 +199,19 @@ One-shot example (4×4 sprite, 3 colors):
         ];
     }
 
-    async function trace(w, h, referenceBase64, referenceExt, statusEl) {
+    async function trace(referenceBase64, referenceExt, statusEl) {
         if (!referenceBase64) {
             statusEl.textContent = 'Load a reference image first';
             return;
         }
         statusEl.textContent = 'Tracing...';
         try {
-            var pixelData = await window.api.traceReference(referenceBase64, referenceExt || 'png', w, h);
+            var result    = await window.api.traceReference(referenceBase64, referenceExt || 'png');
+            var pixelData = result.pixels;
+            var w         = result.w;
+            var h         = result.h;
 
+            // Auto-resize canvas to match traced dimensions
             if (PixelCanvas.getWidth() !== w || PixelCanvas.getHeight() !== h) {
                 PixelCanvas.resize(w, h);
                 document.getElementById('canvas-w').value = w;
@@ -199,8 +225,7 @@ One-shot example (4×4 sprite, 3 colors):
 
             History.push(pixels);
             PixelCanvas.redraw();
-            statusEl.textContent = 'Traced';
-            AIEnforce.enforce(pixels, w, h, statusEl);
+            statusEl.textContent = 'Traced — ' + w + '×' + h;
 
         } catch(e) {
             statusEl.textContent = 'Error: ' + e.message;

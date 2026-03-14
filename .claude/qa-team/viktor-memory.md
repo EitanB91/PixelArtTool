@@ -2,51 +2,83 @@
 
 ## Project Status
 - Scaffolded: 2026-03-13
-- Implementation: ~85% complete as of 2026-03-14
+- Implementation: ~95% complete as of 2026-03-14
 - Tests: Jest configured in `package.json`, zero test files written (OPEN — blocking Phase 3)
+- Last pushed commit: `000dc92` (README) — Phase 1+2 work at `c9df7b6`
 
 ## Phase 0.3 Pre-Audit — Full Findings (2026-03-14)
 
-### BLOCKING (must resolve before Phase 1)
+### BLOCKING — all resolved ✅
 
 | # | File | Issue | Status |
 |---|------|-------|--------|
-| B1 | `src/ai/generate.js` | Calls `PixelCanvas._redraw()` directly — private method (underscore convention). Fix: export public `redraw()` from canvas IIFE. | Open |
-| B2 | `src/ai/generate.js` | History sequence broken: `clear()` pushes empty state, then pixels written directly, then `History.push()`. Undo returns empty canvas instead of pre-generation state. Fix: zero pixels manually (no History), write all, then push once. | Open |
-| B3 | `src/ai/client.js` + `src/main.js` | API key passed plaintext to renderer via IPC. API calls happen in renderer. Fix: move `AIClient.chat()` to main process. Renderer sends prompt via IPC, main calls Claude, returns result only. Key never leaves main. | Open — **not in original roadmap, significant architectural change** |
-| B4 | All modules | IIFE pattern — no `module.exports`. Jest cannot import modules. Test strategy must be decided before Phase 3. | Open |
-| B5 | `src/app.js` | Generate button not disabled during API call. Rapid clicks fire multiple concurrent requests, corrupt history, waste tokens. Fix: disable on start, re-enable on complete/error. | Open |
+| B1 | `src/ai/generate.js` | Called `PixelCanvas._redraw()` directly | ✅ Fixed — public `redraw` exported |
+| B2 | `src/ai/generate.js` | History sequence broken | ✅ Fixed — zero-in-place, single push |
+| B3 | `src/ai/client.js` + `src/main.js` | API key passed to renderer | ✅ Fixed — API calls in main.js only |
+| B4 | All modules | IIFE pattern — Jest cannot import | ✅ Strategy documented in `tests/TESTING_STRATEGY.md` — tests written in Phase 3 |
+| B5 | `src/app.js` | Generate button not disabled during API call | ✅ Fixed |
 
-### ADVISORY (non-blocking, log for sprint)
+### ADVISORY — all resolved ✅
 
-| # | File | Issue |
-|---|------|-------|
-| A1 | `src/ui/toolbar.js` | Canvas resize has no JS bounds validation — HTML min/max bypassable via DevTools |
-| A2 | `src/core/palette.js` | `addColor()` fails silently at 8-color limit — no UI feedback |
-| A3 | `src/ui/reference-panel.js` | `result.ext` used unsanitized in `img.src` — minor XSS vector |
-| A4 | `src/ai/generate.js` | No JSON schema validation before `_applyGrid()` — crashes on malformed AI response |
-| A5 | `src/ai/generate.js` | `2048` max tokens is magic number — truncates large sprites |
-| A6 | `src/ui/output-panel.js` | Copy button timeout stacks on rapid click — cosmetic flicker |
-| A7 | `src/ai/client.js` | Model hardcoded as `claude-opus-4-6`; API version string `2023-06-01` outdated |
-| A8 | `src/ai/generate.js` | No markdown fence stripping before JSON.parse — AI sometimes wraps output |
-| A9 | `package.json` | `@anthropic-ai/sdk` listed as dependency but never imported (API called via fetch) |
-| A10 | `exporter.js` + `png2sprite.js` | Greedy rect algorithm duplicated in both files |
+| # | File | Issue | Status |
+|---|------|-------|--------|
+| A1 | `src/ui/toolbar.js` | No JS bounds validation on canvas resize | ✅ Fixed |
+| A2 | `src/core/palette.js` | Silent fail at 8-color limit | ✅ Fixed |
+| A3 | `src/ui/reference-panel.js` | `result.ext` unsanitized | ✅ Fixed — allowlist added |
+| A4 | `src/ai/generate.js` | No JSON schema validation | ✅ Fixed |
+| A5 | `src/ai/generate.js` | `2048` magic number max tokens | ✅ Fixed — adaptive formula |
+| A6 | `src/ui/output-panel.js` | Copy timeout stacking | ✅ Fixed |
+| A7 | `src/ai/client.js` | Hardcoded model + outdated API version | ✅ Fixed — `claude-sonnet-4-6` |
+| A8 | `src/ai/generate.js` | No markdown fence stripping | ✅ Fixed |
+| A9 | `package.json` | Unused `@anthropic-ai/sdk` dependency | ✅ Fixed — removed |
+| A10 | `exporter.js` + `png2sprite.js` | Greedy rect algorithm duplicated | ⚠️ Known — deferred to post-MVP (O7) |
 
-### CLEAN — confirmed correct (2026-03-14)
-IPC security model ✅ · FS isolation ✅ · ZOOM display-only/export 1× ✅ · AppState centralization ✅ · Script load order ✅ · PNG export pipeline ✅ · Flood fill boundary checks ✅ · Error handling in client.js ✅ · All IPC channels matched ✅ · History push-once-per-stroke ✅
+## Phase 2 QA Run (2026-03-14) — PASS WITH NOTES
+
+### Bugs found and fixed in-session
+
+| # | File | Bug | Status |
+|---|------|-----|--------|
+| N1 | `generate.js:115` | Status text overwrote enforce message | ✅ Fixed |
+| N2 | `reference-panel.js:19` | `AppState.referenceExt` stored raw `'jpg'` | ✅ Fixed |
+
+### Advisories from Phase 2 QA (Phase 3 cleanup — Activity 3.5)
+
+| # | File | Item | Status |
+|---|------|------|--------|
+| V-A1 | `src/main.js` | `require()` calls inside handler body | ✅ Fixed — moved to top-level |
+| V-A2 | `src/ui/reference-panel.js` | `console.log` debug line | ✅ Fixed — removed |
+| V-A3 | `src/main.js` | `nativeImage` not in top-level destructure | ✅ Fixed |
+| V-A4 | `src/ui/reference-panel.js` | `img.src = ''` spurious request | ✅ Fixed — `removeAttribute('src')` |
+
+## Trace Reference QA Run (2026-03-14) — PASS WITH NOTES
+
+**Scope:** CSP fix, auto-size, clearReference wiring
+**New bugs found:** Zero
+**Advisories:** V-A1 through V-A4 (all now resolved in same session)
 
 ## Convention Reminders
 *(Viktor notes any conventions that have been violated more than once)*
 
-*(none yet)*
+- `require()` inside function bodies — happened in `trace-reference` handler. Watch for this pattern in future IPC handlers.
 
 ## QA Run History
 
 | Date | Scope | Verdict | Notes |
 |------|-------|---------|-------|
-| — | — | — | First run pending |
+| 2026-03-14 | Phase 2 + enforce.js + Trace Reference (first full run) | PASS WITH NOTES | 2 bugs found+fixed in-session; 4 advisories noted |
+| 2026-03-14 | Trace Reference fixes (CSP, auto-size, clearReference) | PASS WITH NOTES | 0 bugs; advisories all resolved same session |
+
+## Chain-of-Thought Prompt Change (2026-03-14)
+- `generate.js` system prompt updated: model now writes a region plan before outputting JSON
+- JSON extractor updated: finds first `{` in response, strips plan text before parse
+- maxTokens overhead bumped by 200 to account for plan text
+- Result: simple sprites (mushroom) ✅ game-asset quality. Complex characters (cave dweller) ❌ still fails — confirmed model ceiling
+- Decision: AI generation scoped to simple sprites for MVP. Complex characters → Trace workflow.
+- Option F (image gen API → Trace) added to ROADMAP as O8 — post-MVP, pending Director funding
 
 ## Viktor's Standing Notes
-- Test runner not yet set up. First priority when implementation begins.
+- Tests: Phase 3 is the gate. Until then, `npm test` exits code 1. This is expected but not acceptable forever.
 - `png2sprite.js` is shared with other projects — flag any external import additions immediately.
-- API key handling: watch every new file that touches `client.js` or IPC channels.
+- API key handling: confirmed secure — key stays in main process, renderer gets only boolean + results.
+- A10 (greedy rect duplication) deferred to post-MVP O7.

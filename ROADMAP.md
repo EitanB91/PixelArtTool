@@ -37,9 +37,9 @@ The plan accounts for all team touchpoints: Director approvals, Nova design sess
 | M4 | Reference image side panel | ✅ Done |
 | M5 | Export pxAt() code + clipboard | ✅ Done |
 | M6 | Save/load PNG | ✅ Done |
-| M7 | AI sprite generation (text + reference → canvas) | ⚠️ Partial — static system prompt, no JSON validation |
-| M8 | Style enforcement — palette reduction (max 6 colors) | ❌ Missing — `enforce.js` not created |
-| M9 | Unit tests for all pure-logic modules | ❌ Missing — `tests/` empty |
+| M7 | AI sprite generation (text → canvas) — **scope: simple sprites/objects** | ✅ Done — chain-of-thought prompt, JSON validation, adaptive tokens. Complex characters hit model ceiling — use Trace for those. |
+| M8 | Style enforcement — palette reduction (max 6 colors) | ✅ Done — `enforce.js` complete, auto-enforce with toggle |
+| M9 | Unit tests for all pure-logic modules | ❌ Missing — `tests/` empty (Phase 3) |
 
 ### Optional (post-MVP, Director selects at Phase 4 retrospective)
 
@@ -52,6 +52,7 @@ The plan accounts for all team touchpoints: Director approvals, Nova design sess
 | O5 | Electron packaged distribution (installer) | Low | Operational |
 | O6 | Animation frame support | **High — separate sprint** | Future |
 | O7 | Refactor greedy rect algorithm — shared module for `exporter.js` + `png2sprite.js` | Low | Code health |
+| O8 | **Option F — Text → Image Generation API → Trace pipeline** (e.g. DALL-E/Stable Diffusion → auto-trace) | High | Game-changer for complex character AI generation. Requires external API funding. Director priority when budget allows. |
 
 ---
 

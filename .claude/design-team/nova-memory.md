@@ -2,51 +2,70 @@
 
 ## Project Purpose
 Standalone desktop app (Electron) to accelerate sprite production for game projects.
-Pipeline: description + reference image → AI generation → style enforcement → PNG → pxAt() code.
+Pipeline: description + reference image → AI generation / Trace → style enforcement → PNG → pxAt() code.
 
 ## Tech Stack Decisions
-- **Electron** — desktop app, native file system access, no CORS for Claude API calls
+- **Electron** — desktop app, native file system access, API calls in main process
 - **Vanilla JS + Canvas API** — no framework overhead, matches game project philosophy
-- **@anthropic-ai/sdk** — Claude API for AI-assisted generation and style enforcement
-- **pngjs** — PNG read/write (same library as png2sprite.js)
-- API key stored in `.env`, passed to renderer via IPC (never exposed in renderer code)
+- **Anthropic API via fetch()** — Claude Sonnet 4.6 for AI generation (key stays in main.js)
+- **pngjs + nativeImage** — PNG decode/resize for Trace Reference feature
+- API key stored in `.env`, never exposed in renderer
 
-## Core Tool Features (planned)
-1. **Drawing canvas** — configurable zoom (default 8×), pencil/eraser/fill/eyedropper tools
-2. **Reference panel** — display reference image side-by-side with drawing canvas
-3. **AI generation** — text prompt + optional reference → Claude generates sprite description →
-   tool interprets into pixel art (or Claude Vision directly colors a grid)
-4. **Style enforcement** — palette reducer (max 6 colors), outline detector
-5. **Export panel** — runs png2sprite.js logic, shows pxAt() code, copy-to-clipboard button
-6. **Undo/redo** — 50-step history stack
+## Build Status (updated 2026-03-14)
+- [x] Core drawing canvas with zoom (pencil, eraser, fill, eyedropper)
+- [x] Palette panel (6-color swatch, max 8, add/remove, UI feedback at cap)
+- [x] Reference image panel — CSP fixed (img-src data:), jpg→jpeg mime fix, clearReference()
+- [x] Claude API integration — full IPC chain, system prompt, fence-stripping, schema validation
+- [x] Export / copy-to-clipboard (exporter.js — greedy rect algorithm, pxAt() output)
+- [x] Electron IPC wiring (open-image, save-png, copy-to-clipboard, check-api-key, call-claude, trace-reference)
+- [x] Undo/redo 50-step history
+- [x] Style enforcement — enforce.js complete (palette reduction, auto-enforce with toggle)
+- [x] AI generation quality — combined system prompt (Nova artistic + Orchestrator format) + chain-of-thought planning
+- [x] Trace Reference — algorithmic nearest-neighbor resize via nativeImage+pngjs, auto-size to native dims
+- [ ] Unit tests — tests/ empty (Phase 3)
+
+## Core Tool Features — Final MVP Shape
+1. **Drawing canvas** — zoom 2×–24×, pencil/eraser/fill/eyedropper, 50-step undo/redo
+2. **Reference panel** — load PNG/JPEG/GIF, display side-by-side, Trace button
+3. **Trace Reference** — algorithmic resize to native dimensions (clamped 128×128), no palette enforcement (preserves fidelity)
+4. **AI generation** — text prompt → Claude Sonnet → chain-of-thought plan → JSON grid → canvas. Auto-enforce after generation.
+5. **Style enforcement** — auto palette reduction to 6 colors, artist toggle, undo-able
+6. **Export panel** — pxAt() code, copy-to-clipboard, save PNG
 
 ## UI Design Principles
 - Dark theme (eye strain reduction for long sessions)
-- Main layout: [Toolbar | Drawing Canvas | Reference Panel | Export Panel]
+- Main layout: [Toolbar | Drawing Canvas | Right Panels (Palette / Reference / AI / Export)]
 - Drawing canvas is the largest element — everything else is secondary
-- Keyboard shortcuts for all tools (B=brush, E=eraser, G=fill, I=eyedropper, Z=undo)
+- Keyboard shortcuts: B=pencil, E=eraser, G=fill, I=eyedropper, Z=undo, Y=redo
 
 ## Integration with Game Projects
 - `tools/png2sprite.js` is shared — copy to any game project's `tools/` directory
 - Output format: `pxAt(ctx, bx, by, gx, gy, '#RRGGBB', w, h)` calls inside a named function
-- Sprite dimensions must match game's pixel grid (Ages of War: player=16×22, enemies vary)
+- Sprite dimensions: Ages of War player=16×22, enemies vary
 
-## Build Status (updated 2026-03-14)
-- [x] Core drawing canvas with zoom (pencil, eraser, fill, eyedropper)
-- [x] Palette panel (6-color swatch, max 8, add/remove)
-- [x] Reference image loader (side panel, base64 display)
-- [x] Claude API integration — `client.js` complete, `generate.js` partial (static prompt, no JSON validation)
-- [x] Export / copy-to-clipboard (`exporter.js` — greedy rect algorithm, pxAt() output)
-- [x] Electron IPC wiring (open-image, save-png, copy-to-clipboard, get-api-key)
-- [x] Undo/redo 50-step history
-- [ ] Style enforcement — `enforce.js` not yet created (Phase 1 MVP)
-- [ ] AI generation quality — system prompt enhancement + JSON hardening (Phase 2 MVP)
-- [ ] Unit tests — `tests/` empty (Phase 3 MVP)
+## Decided: AI Generation Scope (2026-03-14)
+**AI generation is MVP-ready for simple sprites only.**
+- ✅ Works well: simple objects, geometric shapes (mushroom, coin, gem, flame, tree)
+- ❌ Fails: complex characters (humans, warriors, creatures with limbs/weapons)
+- For complex characters: **Trace Reference is the recommended workflow**
+- Option F (text → image generation API → Trace) is on the post-MVP roadmap when funding allows
+
+## Decided: Chain-of-Thought Prompt (2026-03-14)
+System prompt now requires model to write a sprite plan (region-by-row breakdown) before outputting JSON.
+Improved mushroom quality to game-asset level. Did not fix complex character generation — confirmed ceiling.
+Approved implicitly by Director during live test session.
 
 ## Decided: Phase 2 — AI Generation Quality Approach
-**Split authorship (Approach C).** Nova writes the artistic vision section of the system prompt (silhouette discipline, palette philosophy, what quality means). Orchestrator writes the output format section (JSON schema, one-shot example). Nova reviews the combined prompt before it ships — specifically to verify the tone seam between the two sections is seamless.
+**Split authorship (Approach C) + chain-of-thought.** Nova wrote artistic vision section, Orchestrator wrote output format + planning step. Combined prompt live and tested.
 Approved by Director 2026-03-14.
 
 ## Decided: enforce.js UX
-**Auto-enforce after generation, with artist toggle to disable.**
-Approved by Director 2026-03-14. No manual button needed — the tool does the right thing by default.
+**Auto-enforce after AI generation, with artist toggle to disable. Trace skips enforce entirely.**
+Approved by Director 2026-03-14.
+
+## Pending Work
+- Phase 3: Unit tests (Viktor defines criteria, Orchestrator writes)
+- Phase 3: Convention hardening (Activity 3.5 advisories — all minor)
+- Phase 4: MVP QA gate + first versioned push
+- Phase 5: Docs (USAGE.md, ARCHITECTURE.md)
+- Post-MVP: Option F (image generation API → Trace pipeline)

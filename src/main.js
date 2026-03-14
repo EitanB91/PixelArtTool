@@ -1,6 +1,7 @@
 'use strict';
 
-const { app, BrowserWindow, ipcMain, dialog, clipboard } = require('electron');
+const { app, BrowserWindow, ipcMain, dialog, clipboard, nativeImage } = require('electron');
+const PNG = require('pngjs').PNG;
 const path = require('path');
 const fs   = require('fs');
 
@@ -126,16 +127,19 @@ ipcMain.handle('call-claude', async function(event, messages, maxTokens, system)
 
 // ── IPC: Reference image tracing (algorithmic, no AI) ─────────────────────────
 
-ipcMain.handle('trace-reference', function(event, base64, ext, dstW, dstH) {
-    var PNG    = require('pngjs').PNG;
-    var { nativeImage } = require('electron');
-
+ipcMain.handle('trace-reference', function(event, base64, ext) {
     // Decode via nativeImage (handles PNG, JPEG, GIF) then export to PNG for pngjs
     var mime   = (ext === 'jpg') ? 'jpeg' : ext;
     var img    = nativeImage.createFromDataURL('data:image/' + mime + ';base64,' + base64);
     var size   = img.getSize();
     var srcW   = size.width;
     var srcH   = size.height;
+
+    // Auto-size: use native dimensions, clamped to 128×128 preserving aspect ratio
+    var scale = Math.min(1, Math.min(128 / srcW, 128 / srcH));
+    var dstW  = Math.max(1, Math.round(srcW * scale));
+    var dstH  = Math.max(1, Math.round(srcH * scale));
+
     var parsed = PNG.sync.read(img.toPNG());
     var src    = parsed.data; // RGBA Buffer
 
@@ -153,5 +157,5 @@ ipcMain.handle('trace-reference', function(event, base64, ext, dstW, dstH) {
             dst[di + 3] = src[si + 3];
         }
     }
-    return dst;
+    return { pixels: dst, w: dstW, h: dstH };
 });

@@ -128,6 +128,26 @@ Nova manages all visual decisions for this tool. Her files:
 
 When starting a design session, invoke `/nova` to load Nova into context.
 
+## Memory Update Protocol
+
+Memory files must be updated in two situations — no exceptions:
+
+| Trigger | Who updates | Files |
+|---------|-------------|-------|
+| **Session approaching compaction** (context getting long) | All active team members | Their own memory file |
+| **Phase transition** (one phase marked complete, next begins) | All active team members | Their own memory file |
+
+**What to update:**
+- Current build status (what is done, what is not)
+- Any decisions made during the session
+- Open items and their current state
+- QA run history (Viktor)
+- Pending work list (Nova)
+
+**Rule:** If a team member is activated and their memory file is stale (does not reflect current project state), they must note the discrepancy and update before proceeding with any task.
+
+---
+
 ## Git
 
 ```bash

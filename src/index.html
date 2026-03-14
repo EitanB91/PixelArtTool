@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:;">
     <title>Pixel Art Tool</title>
     <link rel="stylesheet" href="styles/main.css">
 </head>
@@ -63,7 +63,7 @@
                     </div>
                     <div class="panel-row">
                         <button id="btn-load-ref">Load Image</button>
-                        <button id="btn-trace-ref" title="Algorithmically resize + trace reference onto canvas">Trace</button>
+                        <button id="btn-trace-ref" title="Resize reference image onto canvas (best results: use sprites with transparent background)">Trace</button>
                     </div>
                 </div>
 
