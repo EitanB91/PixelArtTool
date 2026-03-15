@@ -2,10 +2,11 @@
 
 ## Project Status
 - Scaffolded: 2026-03-13
-- Implementation: 100% MVP complete as of 2026-03-14
-- Tests: 42 passing (palette, history, exporter, enforce) ✅
-- Phase 3: COMPLETE ✅ — next is Phase 4 (MVP QA Gate & First Push)
-- Last pushed commit: `3fce7a4` (chain-of-thought + compaction updates)
+- v0.1.0-mvp: pushed 2026-03-15 (commit `a1f877c`)
+- v0.2.0: pushed 2026-03-15 (commit `888700f`) — O1+O2+O3+O5 complete
+- Tests: 42 passing ✅
+- Phase 5 (Docs): completed 2026-03-15 — `docs/USAGE.md` + `docs/ARCHITECTURE.md` written
+- Next: O6 Animation frames sprint (separate roadmap)
 
 ## Phase 0.3 Pre-Audit — Full Findings (2026-03-14)
 
@@ -103,9 +104,32 @@
 - `tests/enforce.test.js` — 7 tests ✅
 - **Total: 42 tests, 4 suites, 0 failures**
 
+## Phase 7 QA Run (2026-03-15) — PASS ✅
+
+**Scope:** Phase 6 additions — O1 (outline detection), O2 (presets), O3 (extract palette), O5 (build config + icon)
+**Blocking items found:** 0
+**Advisories found and fixed in-session:** 2
+
+| # | File | Issue | Status |
+|---|------|-------|--------|
+| P7-A1 | `src/ai/enforce.js:5` | Stale comment — said "stub" after O1 was implemented | ✅ Fixed |
+| P7-A2 | `src/ui/reference-panel.js:22` | Extract palette handler missing `catch` | ✅ Fixed |
+
+**Tests:** 42 passing ✅
+**Tag pushed:** `v0.2.0`
+
+## O6 Animation Sprint — Planning Complete (2026-03-15)
+
+Full meeting summary: `.claude/projects/c--Users-user-Desktop-Ai-Claude-PixelArtTool/memory/reference_o6_meeting_summary.md`
+
+**Viktor's spike criteria (S1–S5):** approved by Director. Must pass before full sprint commitment. ~2 hours, no UI code, pure pixel manipulation test. See meeting summary for details.
+
+**Status:** Spike (POC) is next step.
+
 ## Viktor's Standing Notes
-- Tests: DONE. `npm test` → 42 passing. Phase 3 gate cleared.
+- Tests: 42 passing. Both v0.1.0-mvp and v0.2.0 shipped clean.
 - `png2sprite.js` is shared with other projects — flag any external import additions immediately.
 - API key handling: confirmed secure — key stays in main process, renderer gets only boolean + results.
-- A10 (greedy rect duplication) deferred to post-MVP O7.
-- P3-A2, P3-A3 deferred to Phase 6.
+- A10 (greedy rect duplication) deferred to O7 — still open.
+- P3-A2 (eyedropper history), P3-A3 (trace-reference no try/catch) — still open, low priority.
+- Next: O6 Animation sprint — spike first, then full roadmap.

@@ -11,26 +11,33 @@ Pipeline: description + reference image → AI generation / Trace → style enfo
 - **pngjs + nativeImage** — PNG decode/resize for Trace Reference feature
 - API key stored in `.env`, never exposed in renderer
 
-## Build Status (updated 2026-03-14)
+## Build Status (updated 2026-03-15 — v0.2.0 shipped)
 - [x] Core drawing canvas with zoom (pencil, eraser, fill, eyedropper)
 - [x] Palette panel (6-color swatch, max 8, add/remove, UI feedback at cap)
 - [x] Reference image panel — CSP fixed (img-src data:), jpg→jpeg mime fix, clearReference()
 - [x] Claude API integration — full IPC chain, system prompt, fence-stripping, schema validation
 - [x] Export / copy-to-clipboard (exporter.js — greedy rect algorithm, pxAt() output)
-- [x] Electron IPC wiring (open-image, save-png, copy-to-clipboard, check-api-key, call-claude, trace-reference)
+- [x] Electron IPC wiring (open-image, save-png, copy-to-clipboard, check-api-key, call-claude, trace-reference, extract-palette)
 - [x] Undo/redo 50-step history
-- [x] Style enforcement — enforce.js complete (palette reduction, auto-enforce with toggle)
+- [x] Style enforcement — enforce.js complete (palette reduction + outline detection, auto-enforce with toggle)
 - [x] AI generation quality — combined system prompt (Nova artistic + Orchestrator format) + chain-of-thought planning
 - [x] Trace Reference — algorithmic nearest-neighbor resize via nativeImage+pngjs, auto-size to native dims
-- [x] Unit tests — 42 tests passing (palette, history, exporter, enforce) ✅ Phase 3 complete
+- [x] Unit tests — 42 tests passing (palette, history, exporter, enforce) ✅
+- [x] O1 — Outline detection — boundary pixels → darkest palette color, runs inside enforce()
+- [x] O2 — Dimension presets — topbar dropdown (16×22, 16×16, 8×8, 32×32, 64×64)
+- [x] O3 — Extract Palette — reference panel button, top-8 colors by frequency
+- [x] O5 — Windows distribution — electron-builder NSIS + portable, icon generated via tools/generate-icon.js
 
-## Core Tool Features — Final MVP Shape
+## Core Tool Features — v0.2.0 Shape
 1. **Drawing canvas** — zoom 2×–24×, pencil/eraser/fill/eyedropper, 50-step undo/redo
-2. **Reference panel** — load PNG/JPEG/GIF, display side-by-side, Trace button
-3. **Trace Reference** — algorithmic resize to native dimensions (clamped 128×128), no palette enforcement (preserves fidelity)
-4. **AI generation** — text prompt → Claude Sonnet → chain-of-thought plan → JSON grid → canvas. Auto-enforce after generation.
-5. **Style enforcement** — auto palette reduction to 6 colors, artist toggle, undo-able
-6. **Export panel** — pxAt() code, copy-to-clipboard, save PNG
+2. **Reference panel** — load PNG/JPEG/GIF, display side-by-side, Trace + Extract Palette buttons
+3. **Trace Reference** — algorithmic resize to native dimensions (clamped 128×128), no palette enforcement
+4. **Extract Palette** — pulls top-8 dominant colors from reference image into palette
+5. **AI generation** — text prompt → Claude Sonnet → chain-of-thought plan → JSON grid → canvas. Auto-enforce after generation.
+6. **Style enforcement** — palette reduction (6 colors) + outline detection, artist toggle, undo-able
+7. **Export panel** — pxAt() code, copy-to-clipboard, save PNG
+8. **Dimension presets** — quick-select common sprite sizes from topbar dropdown
+9. **Windows installer** — `npm run build` → NSIS installer + portable exe
 
 ## UI Design Principles
 - Dark theme (eye strain reduction for long sessions)
@@ -91,11 +98,24 @@ Approved by Director 2026-03-14.
 - No UI decisions needed
 - Approved 2026-03-15
 
+## O6 Animation Sprint — Planning Complete (2026-03-15)
+
+Full meeting summary: `.claude/projects/c--Users-user-Desktop-Ai-Claude-PixelArtTool/memory/reference_o6_meeting_summary.md`
+
+**Nova's approved proposals:**
+- Single animation mode (no character/non-character sub-modes)
+- Pose template picker with two categories: Character Poses (Idle, Walk, Jump) + Object/Effect Poses (Rotation, Pulse, Flicker)
+- Region tools gated by sprite size (24×24+), not by category
+- Onion skinning, frame strip, Play/Pause with FPS control
+- Below 24×24: region tools grayed out with tooltip
+
+**Status:** Spike (POC) is next step before full implementation.
+
 ## Pending Work
 - ~~Phase 3: Unit tests~~ ✅ Done
 - ~~Phase 3: Convention hardening~~ ✅ Done
-- ~~Phase 4: MVP QA gate~~ ✅ Done — v0.1.0-mvp tagged + pushed 2026-03-15
-- Phase 5: Docs (USAGE.md, ARCHITECTURE.md) — deferred, Director moved straight to Phase 6
-- **Phase 6 (IN PROGRESS):** O1 ✅ designed | O2 ✅ designed | O3 ✅ designed | O5 ✅ designed — implementing
-- Post-MVP: Option F (image generation API → Trace pipeline)
-- Post-v0.2.0: O6 Animation frames sprint (Director confirmed as next major sprint)
+- ~~Phase 4: MVP QA gate~~ ✅ Done — v0.1.0-mvp pushed 2026-03-15
+- ~~Phase 6: O1+O2+O3+O5~~ ✅ Done — v0.2.0 pushed 2026-03-15
+- Phase 5: Docs (USAGE.md, ARCHITECTURE.md) — ✅ Complete 2026-03-15
+- **ACTIVE: O6 Animation sprint** — planning meeting done, spike next
+- Post-O6: Option F (image generation API → Trace pipeline, pending Director funding)
