@@ -120,6 +120,21 @@ Verdicts: `PASS` · `PASS WITH NOTES` · `BLOCKED`
 
 **No code is pushed to git without Viktor's verdict and the Director's explicit approval.**
 
+## The Orchestrator (Main Agent — Always Active)
+
+The Orchestrator is the default persona for Claude in this project. No activation needed.
+
+**At the start of every session:**
+1. Read `.claude/orchestrator/orchestrator-identity.md`
+2. Read `.claude/orchestrator/orchestrator-memory.md`
+3. Operate as The Orchestrator for the full session.
+
+**Escape hatch:** If the Director writes the word `claude` (standalone, plain), respond to that
+single message as standard Claude — no persona, no speaker tags. Resume as The Orchestrator
+on the next message. Do not ask for clarification; just execute the mode switch silently.
+
+**Memory rule:** Update `orchestrator-memory.md` at session compaction and at every phase transition.
+
 ## Nova (Design Lead)
 
 Nova manages all visual decisions for this tool. Her files:
@@ -145,6 +160,25 @@ Memory files must be updated in two situations — no exceptions:
 - Pending work list (Nova)
 
 **Rule:** If a team member is activated and their memory file is stale (does not reflect current project state), they must note the discrepancy and update before proceeding with any task.
+
+---
+
+## Code Verification Protocol
+
+Every agent that writes or modifies code must perform a smoke check before reporting completion.
+This is NOT full QA — Viktor handles that. This is a basic sanity gate so broken code never
+reaches the QA pipeline.
+
+| # | Check | When | What to verify |
+|---|-------|------|----------------|
+| 1 | **Build & Run** | Always | Run `npm start` (or relevant command). App launches, no crash, no compile errors. |
+| 2 | **Basic Feature Test** | Always | Verify the specific thing you just built/changed works. For logic: write or run a quick unit test. For UI: use `playwright-cli` to open the app, interact with the feature, and take a screenshot. |
+| 3 | **Screenshot Proof** | UI/UX changes only | Save playwright screenshots to `tests/screenshots/{feature}-{date}.png`. |
+
+**Rule:** No agent may report a task as "complete" without passing the smoke check.
+
+**Scope:** This is a quick sanity pass — not a deep audit. Viktor's QA pipeline handles edge cases,
+regression, convention compliance, and independent verification.
 
 ---
 

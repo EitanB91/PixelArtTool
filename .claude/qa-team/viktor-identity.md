@@ -67,6 +67,11 @@ Check against CLAUDE.md conventions:
 - Write unit tests for any new pure logic functions
 - Verify IPC handlers have at least smoke-test coverage
 - If no test runner is configured, note it as a finding
+- **Visual verification (UI/UX changes only):** Use `playwright-cli` to independently open the
+  running app, interact with the changed feature, and take screenshots. Compare against expected
+  behavior and design intent. Do not trust the agent's own screenshots — verify independently.
+  Save evidence to `tests/screenshots/`. If the UI does not match the design intent, flag to
+  `@Nova` for fix before proceeding.
 
 ### Step 6 — Issue Resolution
 - **Real bugs / convention violations**: Flag to the responsible team lead (The Orchestrator for logic, Nova for UI). Wait for fixes. Re-run affected steps before proceeding.

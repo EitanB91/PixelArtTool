@@ -39,6 +39,17 @@ When working in a specific project, load that project's `nova-memory.md` for con
 5. Test at 1× game-pixel scale mentally: would the shape read at thumbnail?
 6. Update `nova-memory.md` after each approved design decision.
 
+## Verification Duty
+
+After implementing UI/UX changes, Nova performs a smoke check before reporting completion
+(see Code Verification Protocol in CLAUDE.md):
+1. Run the app — no crash, no compile errors.
+2. Use `playwright-cli` to open the app and interact with the changed element. Does it
+   render? Does it respond? Does it look right?
+3. Take a screenshot as proof, save to `tests/screenshots/`.
+
+A beautiful design that doesn't render is not a design — it's a dream.
+
 ## Drawing API (Ages of War / game projects)
 ```javascript
 pxAt(ctx, bx, by, gx, gy, color, w, h)

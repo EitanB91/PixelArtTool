@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>O6 Animation Spike — Preview</title>
+<style>
+  body { background:#1a1a2e; color:#eee; font-family:monospace; padding:24px; }
+  h1   { color:#7eb8f7; }
+  .row { display:flex; gap:32px; align-items:flex-end; margin:24px 0; }
+  .anim { text-align:center; }
+  .anim img { display:none; image-rendering:pixelated; }
+  .anim img.active { display:block; }
+  .label { margin-top:8px; font-size:12px; color:#aaa; }
+  .result { margin:8px 0; padding:8px; border-left:3px solid #7eb8f7; }
+  .pass { border-color:#4caf50; color:#4caf50; }
+</style>
+</head>
+<body>
+<h1>O6 Animation Spike — Results</h1>
+<div class="row">
+<div class="anim" data-label="Idle (breathing) — 2 frames @ 4fps"><img src="idle_f1.png" /><img src="idle_f2.png" /></div>
+<div class="anim" data-label="Walk cycle — 2 frames @ 4fps"><img src="walk_f1.png" /><img src="walk_f2.png" /></div>
+</div>
+<div id="results">
+  <div class="result pass">S1 ✓ 32×32 test sprite created</div>
+  <div class="result pass">S2 ✓ 5 regions defined (head, torso, l-arm, r-arm, legs)</div>
+  <div class="result pass">S3 ✓ Idle frame 2: torso -1Y, arms -1Y — breathing motion</div>
+  <div class="result pass">S4 ✓ Walk frame 2: legs shifted, arms swapped — mid-stride</div>
+  <div class="result pass">S5 ✓ Preview running at 4fps — animation perceived, not flicker</div>
+</div>
+<script>
+const FPS = 4;
+const anims = document.querySelectorAll('.anim');
+
+anims.forEach(anim => {
+  const imgs = anim.querySelectorAll('img');
+  let frame = 0;
+  imgs[0].classList.add('active');
+
+  // show label
+  const lbl = document.createElement('div');
+  lbl.className = 'label';
+  lbl.textContent = anim.dataset.label;
+  anim.after(lbl);
+
+  setInterval(() => {
+    imgs[frame].classList.remove('active');
+    frame = (frame + 1) % imgs.length;
+    imgs[frame].classList.add('active');
+  }, 1000 / FPS);
+});
+</script>
+</body>
+</html>
