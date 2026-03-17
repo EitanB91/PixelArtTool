@@ -111,17 +111,27 @@
 
     </div>
 
+    <!-- Core (no dependencies) -->
     <script src="core/palette.js"></script>
     <script src="core/history.js"></script>
     <script src="core/canvas.js"></script>
+    <!-- Animation data model (depends on makeHistory from history.js) -->
+    <script src="animation/frames.js"></script>
+    <script src="animation/regions.js"></script>
+    <script src="animation/pose-templates.js"></script>
+    <script src="animation/timeline.js"></script>
+    <!-- UI (depends on core + animation) -->
     <script src="ui/toolbar.js"></script>
     <script src="ui/palette-panel.js"></script>
     <script src="ui/reference-panel.js"></script>
     <script src="ui/output-panel.js"></script>
+    <script src="ui/animation-panel.js"></script>
+    <!-- AI + Export -->
     <script src="ai/client.js"></script>
     <script src="ai/generate.js"></script>
     <script src="ai/enforce.js"></script>
     <script src="export/exporter.js"></script>
+    <!-- App entry point (depends on everything above) -->
     <script src="app.js"></script>
 </body>
 </html>

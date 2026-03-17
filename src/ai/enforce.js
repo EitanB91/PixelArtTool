@@ -150,7 +150,7 @@ var AIEnforce = (function() {
         var outlineChanged = detectOutline(pixels, w, h);
 
         if (reducedChanged || outlineChanged) {
-            History.push(pixels);
+            PixelCanvas.pushToHistory(pixels);
             PixelCanvas.redraw();
             if (statusEl) {
                 var note = [];

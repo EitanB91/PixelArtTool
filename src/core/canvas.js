@@ -12,6 +12,9 @@ var PixelCanvas = (function() {
     var _drawing = false;
     var _lastPx  = null; // {x,y} last drawn pixel (for line continuity)
 
+    // Per-instance history — swappable for animation per-frame undo (O6)
+    var _history = makeHistory();
+
     function toHex(r, g, b) {
         return '#' +
             ('0' + r.toString(16)).slice(-2).toUpperCase() +
@@ -114,12 +117,16 @@ var PixelCanvas = (function() {
         _canvas = canvasEl;
         _ctx    = canvasEl.getContext('2d');
         resize(_w, _h);
+        // Push initial blank state so Ctrl+Z can undo back to blank
+        _history.push(_pixels);
 
         _canvas.addEventListener('mousedown', function(e) {
             _drawing = true;
             _lastPx  = null;
             _handleDraw(e);
-            History.push(_pixels);
+            // P3-A2 (known): history is pushed here for all tools including eyedropper,
+            // even though eyedropper doesn't modify pixels. Low-priority carry-forward.
+            _history.push(_pixels);
         });
         _canvas.addEventListener('mousemove', function(e) {
             if (!_drawing) return;
@@ -168,7 +175,7 @@ var PixelCanvas = (function() {
         _pixels = new Uint8ClampedArray(w * h * 4);
         _canvas.width  = w * _zoom;
         _canvas.height = h * _zoom;
-        History.reset();
+        _history.reset();
         _redraw();
     }
 
@@ -181,13 +188,39 @@ var PixelCanvas = (function() {
 
     function clear() {
         _pixels = new Uint8ClampedArray(_w * _h * 4);
-        History.push(_pixels);
+        _history.push(_pixels);
         _redraw();
     }
 
-    function applyHistory(pixelData) {
+    // Apply pixel data directly (bypasses history — used by undo/redo and frame navigation)
+    function applyPixels(pixelData) {
         _pixels = pixelData;
         _redraw();
+    }
+
+    // Undo last draw action on the current history stack
+    function undo() {
+        var data = _history.undo();
+        if (data) applyPixels(data);
+    }
+
+    // Redo last undone action on the current history stack
+    function redo() {
+        var data = _history.redo();
+        if (data) applyPixels(data);
+    }
+
+    // Push pixels to the active history stack.
+    // Use this instead of the global History singleton — canvas manages its own _history.
+    // Called by generate.js and enforce.js after external pixel mutations.
+    // @param {Uint8ClampedArray} pixelData — the pixel state to record
+    function pushToHistory(pixelData) {
+        _history.push(pixelData);
+    }
+
+    // Swap the active history instance (O6: called by AnimFrames on frame navigation)
+    function setHistory(histInstance) {
+        _history = histInstance;
     }
 
     function getPixels() { return _pixels; }
@@ -205,5 +238,15 @@ var PixelCanvas = (function() {
         return offscreen.toDataURL('image/png').split(',')[1];
     }
 
-    return { init, resize, setZoom, clear, applyHistory, getPixels, getWidth, getHeight, toPngBase64, redraw: _redraw };
+    // Keep applyHistory as an alias for backward-compat (output-panel, AI generate use it)
+    function applyHistory(pixelData) { applyPixels(pixelData); }
+
+    return {
+        init, resize, setZoom, clear,
+        applyHistory, applyPixels,
+        undo, redo, pushToHistory, setHistory,
+        getPixels, getWidth, getHeight,
+        toPngBase64,
+        redraw: _redraw
+    };
 })();

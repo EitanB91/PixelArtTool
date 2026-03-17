@@ -150,6 +150,23 @@ ipcMain.handle('extract-palette', function(event, base64, ext) {
     return colors.slice(0, 8); // top 8 by frequency
 });
 
+// ── IPC: Save spritesheet PNG (O6 animation export) ───────────────────────────
+// Receives a base64-encoded horizontal strip PNG and saves it to disk.
+// Reuses the save-png dialog pattern — no separate channel needed for Phase O6-5.
+// Stub: channel registered here; full compositor lives in exporter.js (Phase O6-5).
+
+ipcMain.handle('save-spritesheet', async function(event, base64Data, defaultName) {
+    var result = await dialog.showSaveDialog(mainWindow, {
+        title: 'Save Spritesheet PNG',
+        defaultPath: defaultName || 'spritesheet.png',
+        filters: [{ name: 'PNG', extensions: ['png'] }]
+    });
+    if (result.canceled || !result.filePath) return false;
+    var buf = Buffer.from(base64Data, 'base64');
+    fs.writeFileSync(result.filePath, buf);
+    return result.filePath;
+});
+
 // ── IPC: Reference image tracing (algorithmic, no AI) ─────────────────────────
 
 ipcMain.handle('trace-reference', function(event, base64, ext) {

@@ -4,9 +4,9 @@
 - Scaffolded: 2026-03-13
 - v0.1.0-mvp: pushed 2026-03-15 (commit `a1f877c`)
 - v0.2.0: pushed 2026-03-15 (commit `888700f`) — O1+O2+O3+O5 complete
-- Tests: 42 passing ✅
-- Phase 5 (Docs): completed 2026-03-15 — `docs/USAGE.md` + `docs/ARCHITECTURE.md` written
-- Next: O6 Animation frames sprint (separate roadmap)
+- O6 Animation sprint: Phase O6-1 complete (2026-03-18) — PASS WITH NOTES
+- Tests: 87 passing ✅ (42 original + 45 new animation tests)
+- **Next: Phase O6-2 — UI Shell (Nova leads, Playwright screenshot required)**
 
 ## Phase 0.3 Pre-Audit — Full Findings (2026-03-14)
 
@@ -33,7 +33,7 @@
 | A7 | `src/ai/client.js` | Hardcoded model + outdated API version | ✅ Fixed — `claude-sonnet-4-6` |
 | A8 | `src/ai/generate.js` | No markdown fence stripping | ✅ Fixed |
 | A9 | `package.json` | Unused `@anthropic-ai/sdk` dependency | ✅ Fixed — removed |
-| A10 | `exporter.js` + `png2sprite.js` | Greedy rect algorithm duplicated | ⚠️ Known — deferred to post-MVP (O7) |
+| A10 | `exporter.js` + `png2sprite.js` | Greedy rect algorithm duplicated | ⚠️ Known — deferred to O7 |
 
 ## Phase 2 QA Run (2026-03-14) — PASS WITH NOTES
 
@@ -63,6 +63,7 @@
 *(Viktor notes any conventions that have been violated more than once)*
 
 - `require()` inside function bodies — happened in `trace-reference` handler. Watch for this pattern in future IPC handlers.
+- Global singleton `History` bypassed by external callers — happened in O6-1 (generate.js, enforce.js). Fix: always use `PixelCanvas.pushToHistory()`, never the global directly.
 
 ## QA Run History
 
@@ -71,6 +72,9 @@
 | 2026-03-14 | Phase 2 + enforce.js + Trace Reference (first full run) | PASS WITH NOTES | 2 bugs found+fixed in-session; 4 advisories noted |
 | 2026-03-14 | Trace Reference fixes (CSP, auto-size, clearReference) | PASS WITH NOTES | 0 bugs; advisories all resolved same session |
 | 2026-03-14 | Phase 3 — full codebase convention audit + test suite | PASS | 1 blocking fix (P3-A1); 42 tests written and passing |
+| 2026-03-15 | Phase 7 — O1+O2+O3+O5 additions | PASS | 2 advisories fixed in-session; v0.2.0 tagged |
+| 2026-03-18 | Phase O6-1 — Architecture & Data Model (initial) | BLOCKED | B1: History singleton regression in generate.js + enforce.js |
+| 2026-03-18 | Phase O6-1 — Re-check after B1 fix | PASS WITH NOTES | B1 resolved; A1/A2 addressed; 87/87 tests green |
 
 ## Chain-of-Thought Prompt Change (2026-03-14)
 - `generate.js` system prompt updated: model now writes a region plan before outputting JSON
@@ -90,12 +94,12 @@
 |---|------|-------|--------|
 | P3-A1 | `src/ai/enforce.js:72` | `var i` declared twice in `reduce()` — second loop used `i` instead of `j` | ✅ Fixed |
 
-**Advisories (non-blocking, deferred to Phase 6):**
+**Advisories (non-blocking, carry-forward):**
 
-| # | File | Item |
-|---|------|------|
-| P3-A2 | `src/core/canvas.js` | `mousedown` pushes history for eyedropper even though canvas doesn't change |
-| P3-A3 | `src/main.js` | `trace-reference` handler has no `try/catch` — raw pngjs error reaches user |
+| # | File | Item | Status |
+|---|------|------|--------|
+| P3-A2 | `src/core/canvas.js` | `mousedown` pushes history for eyedropper even though canvas doesn't change | ⚠️ Code comment added O6-1; still deferred |
+| P3-A3 | `src/main.js` | `trace-reference` handler has no `try/catch` — raw pngjs error reaches user | ⚠️ Still open, low priority |
 
 **Tests written:**
 - `tests/palette.test.js` — 10 tests ✅
@@ -104,32 +108,27 @@
 - `tests/enforce.test.js` — 7 tests ✅
 - **Total: 42 tests, 4 suites, 0 failures**
 
-## Phase 7 QA Run (2026-03-15) — PASS ✅
+## Phase O6-1 QA Run (2026-03-18) — PASS WITH NOTES ✅
 
-**Scope:** Phase 6 additions — O1 (outline detection), O2 (presets), O3 (extract palette), O5 (build config + icon)
-**Blocking items found:** 0
-**Advisories found and fixed in-session:** 2
+**Scope:** Architecture & Data Model — history.js factory, 5 new animation skeleton files, AppState extension, IPC stub, index.html load order, 2 new test suites
+**Blocking items found:** 1 (B1) — found and fixed in same session
+**Advisories addressed:** 2 (A1 deprecation comment, A2 code comment)
 
 | # | File | Issue | Status |
 |---|------|-------|--------|
-| P7-A1 | `src/ai/enforce.js:5` | Stale comment — said "stub" after O1 was implemented | ✅ Fixed |
-| P7-A2 | `src/ui/reference-panel.js:22` | Extract palette handler missing `catch` | ✅ Fixed |
+| O6-B1 | `generate.js:187/226`, `enforce.js:153` | `History.push()` calling orphaned global singleton instead of canvas-internal `_history` | ✅ Fixed — `PixelCanvas.pushToHistory()` added and called at all 3 sites |
 
-**Tests:** 42 passing ✅
-**Tag pushed:** `v0.2.0`
-
-## O6 Animation Sprint — Planning Complete (2026-03-15)
-
-Full meeting summary: `.claude/projects/c--Users-user-Desktop-Ai-Claude-PixelArtTool/memory/reference_o6_meeting_summary.md`
-
-**Viktor's spike criteria (S1–S5):** approved by Director. Must pass before full sprint commitment. ~2 hours, no UI code, pure pixel manipulation test. See meeting summary for details.
-
-**Status:** Spike (POC) is next step.
+**New tests:**
+- `tests/animation-frames.test.js` — 31 tests ✅ (frame CRUD + per-frame history isolation)
+- `tests/animation-regions.test.js` — 24 tests ✅ (region struct + size gate)
+- **Total: 87 tests, 6 suites, 0 failures**
 
 ## Viktor's Standing Notes
-- Tests: 42 passing. Both v0.1.0-mvp and v0.2.0 shipped clean.
+- Tests: 87 passing. v0.1.0-mvp, v0.2.0, O6-1 all shipped clean.
 - `png2sprite.js` is shared with other projects — flag any external import additions immediately.
 - API key handling: confirmed secure — key stays in main process, renderer gets only boolean + results.
 - A10 (greedy rect duplication) deferred to O7 — still open.
-- P3-A2 (eyedropper history), P3-A3 (trace-reference no try/catch) — still open, low priority.
-- Next: O6 Animation sprint — spike first, then full roadmap.
+- P3-A2 (eyedropper history) — code comment added, still deferred.
+- P3-A3 (trace-reference no try/catch) — still open, low priority.
+- **O6-2 gate: UI audit. Playwright screenshot is required evidence. No screenshot = no PASS.**
+- Next: Phase O6-2 — UI Shell. Nova leads HTML/CSS; Orchestrator wires tab switch + canvas layering.

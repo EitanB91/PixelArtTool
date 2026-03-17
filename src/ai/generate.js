@@ -184,7 +184,7 @@ One-shot example (4×4 sprite, 3 colors):
         }
 
         // Single history commit + redraw
-        History.push(pixels);
+        PixelCanvas.pushToHistory(pixels);
         PixelCanvas.redraw();
 
         // Style enforcement (auto, unless artist toggled off)
@@ -223,7 +223,7 @@ One-shot example (4×4 sprite, 3 colors):
                 pixels[i] = pixelData[i];
             }
 
-            History.push(pixels);
+            PixelCanvas.pushToHistory(pixels);
             PixelCanvas.redraw();
             statusEl.textContent = 'Traced — ' + w + '×' + h;
 

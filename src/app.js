@@ -5,13 +5,18 @@
 var AppState = {
     tool:            'pencil',
     referenceBase64: null,
-    referenceExt:    null
+    referenceExt:    null,
+    // ── Animation fields (O6) ──────────────────────────────────────────────────
+    animationMode:        false,   // true when Animation tab is active
+    activeFrameIndex:     0,       // index of the currently displayed frame
+    activeRegionId:       null,    // id of the selected region (null = none)
+    animBackgroundFill:   'transparent' // 'transparent' | hex color string
 };
 
 window.addEventListener('DOMContentLoaded', async function() {
     // Init core
     PixelCanvas.init(document.getElementById('drawCanvas'));
-    History.push(PixelCanvas.getPixels()); // initial empty state
+    // Note: canvas.js pushes the initial blank state to its own history in init()
 
     // Init UI
     Toolbar.init();
@@ -67,14 +72,14 @@ window.addEventListener('DOMContentLoaded', async function() {
             case 'z':
                 if (e.ctrlKey || e.metaKey) {
                     e.preventDefault();
-                    if (e.shiftKey) { var rd = History.redo();  if (rd) PixelCanvas.applyHistory(rd); }
-                    else            { var ud = History.undo();  if (ud) PixelCanvas.applyHistory(ud); }
+                    if (e.shiftKey) { PixelCanvas.redo(); }
+                    else            { PixelCanvas.undo(); }
                 }
                 break;
             case 'y':
                 if (e.ctrlKey || e.metaKey) {
                     e.preventDefault();
-                    var yd = History.redo(); if (yd) PixelCanvas.applyHistory(yd);
+                    PixelCanvas.redo();
                 }
                 break;
         }

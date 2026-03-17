@@ -16,13 +16,11 @@ var Toolbar = (function() {
         });
 
         document.getElementById('btn-undo').addEventListener('click', function() {
-            var data = History.undo();
-            if (data) PixelCanvas.applyHistory(data);
+            PixelCanvas.undo();
         });
 
         document.getElementById('btn-redo').addEventListener('click', function() {
-            var data = History.redo();
-            if (data) PixelCanvas.applyHistory(data);
+            PixelCanvas.redo();
         });
 
         // Zoom slider
