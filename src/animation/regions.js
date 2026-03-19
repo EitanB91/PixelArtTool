@@ -89,7 +89,14 @@ var AnimRegions = (function() {
         _counter = 0;
     }
 
-    // ── Shift engine (stub — full implementation in Phase O6-3) ───────────────
+    // ── Shift engine ──────────────────────────────────────────────────────────
+
+    function _hexToRgb(hex) {
+        var r = parseInt(hex.slice(1, 3), 16);
+        var g = parseInt(hex.slice(3, 5), 16);
+        var b = parseInt(hex.slice(5, 7), 16);
+        return [r, g, b];
+    }
 
     // Move all pixels in a region by (dx, dy) on the given pixel array.
     // Vacated pixels are filled per backgroundFill setting.
@@ -104,12 +111,55 @@ var AnimRegions = (function() {
     // @param {string}           backgroundFill — 'transparent' | hex color
     // @returns {Uint8ClampedArray} mutated pixels
     function shiftRegion(regionId, dx, dy, pixels, w, h, backgroundFill) {
-        // TODO: Phase O6-3 — implement shift engine
-        // Stub returns pixels unchanged
+        var region = _regions[regionId];
+        if (!region || region.pixels.size === 0 || (dx === 0 && dy === 0)) return pixels;
+
+        // Determine background fill RGBA
+        var bgR = 0, bgG = 0, bgB = 0, bgA = 0;
+        if (backgroundFill && backgroundFill !== 'transparent') {
+            var rgb = _hexToRgb(backgroundFill);
+            bgR = rgb[0]; bgG = rgb[1]; bgB = rgb[2]; bgA = 255;
+        }
+
+        // Step 1: Read pixel colors from all region positions
+        var entries = [];
+        region.pixels.forEach(function(key) {
+            var parts = key.split(',');
+            var x = parseInt(parts[0]);
+            var y = parseInt(parts[1]);
+            var i = (y * w + x) * 4;
+            entries.push({
+                x: x, y: y,
+                r: pixels[i], g: pixels[i + 1], b: pixels[i + 2], a: pixels[i + 3]
+            });
+        });
+
+        // Step 2: Clear original positions (fill with background)
+        for (var c = 0; c < entries.length; c++) {
+            var ci = (entries[c].y * w + entries[c].x) * 4;
+            pixels[ci]     = bgR;
+            pixels[ci + 1] = bgG;
+            pixels[ci + 2] = bgB;
+            pixels[ci + 3] = bgA;
+        }
+
+        // Step 3: Write at new positions, clipping out-of-bounds
+        for (var p = 0; p < entries.length; p++) {
+            var nx = entries[p].x + dx;
+            var ny = entries[p].y + dy;
+            if (nx >= 0 && nx < w && ny >= 0 && ny < h) {
+                var ni = (ny * w + nx) * 4;
+                pixels[ni]     = entries[p].r;
+                pixels[ni + 1] = entries[p].g;
+                pixels[ni + 2] = entries[p].b;
+                pixels[ni + 3] = entries[p].a;
+            }
+        }
+
         return pixels;
     }
 
-    // ── Overlay rendering (stub — full implementation in Phase O6-3) ──────────
+    // ── Overlay rendering ────────────────────────────────────────────────────
 
     // Render a semi-transparent colored overlay on the given canvas context,
     // showing all region pixel assignments at the current zoom factor.
@@ -117,7 +167,19 @@ var AnimRegions = (function() {
     // @param {CanvasRenderingContext2D} ctx
     // @param {number}                  zoom — pixels per game pixel
     function renderOverlay(ctx, zoom) {
-        // TODO: Phase O6-3 — implement region overlay rendering
+        ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+        var regions = getAll();
+        for (var r = 0; r < regions.length; r++) {
+            var region = regions[r];
+            // 50% opacity fill
+            ctx.fillStyle = region.color + '80';
+            region.pixels.forEach(function(key) {
+                var parts = key.split(',');
+                var x = parseInt(parts[0]);
+                var y = parseInt(parts[1]);
+                ctx.fillRect(x * zoom, y * zoom, zoom, zoom);
+            });
+        }
     }
 
     // ── Size gate ──────────────────────────────────────────────────────────────

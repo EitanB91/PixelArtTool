@@ -132,8 +132,14 @@ var PixelCanvas = (function() {
             if (!_drawing) return;
             _handleDraw(e);
         });
-        _canvas.addEventListener('mouseup',   function() { _drawing = false; _lastPx = null; });
-        _canvas.addEventListener('mouseleave',function() { _drawing = false; _lastPx = null; });
+        _canvas.addEventListener('mouseup',   function() {
+            _drawing = false; _lastPx = null;
+            if (window.AnimationPanel) AnimationPanel.syncAfterDraw();
+        });
+        _canvas.addEventListener('mouseleave',function() {
+            _drawing = false; _lastPx = null;
+            if (window.AnimationPanel) AnimationPanel.syncAfterDraw();
+        });
 
         _canvas.addEventListener('contextmenu', function(e) { e.preventDefault(); });
     }
@@ -165,6 +171,13 @@ var PixelCanvas = (function() {
                 Palette.addColor(picked);
                 if (window.PalettePanel) PalettePanel.refresh();
                 if (window.Toolbar) Toolbar.refreshColorSwatch();
+            }
+        } else if (tool === 'region-paint') {
+            // Region paint mode: assign pixel to active region
+            if (window.AnimRegions && AppState && AppState.activeRegionId) {
+                AnimRegions.paintPixel(AppState.activeRegionId, pt.x, pt.y);
+                // Lightweight update — overlay + counts only, no frame strip rebuild
+                if (window.AnimationPanel) AnimationPanel.refreshRegionOnly();
             }
         }
     }

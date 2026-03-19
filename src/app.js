@@ -23,6 +23,7 @@ window.addEventListener('DOMContentLoaded', async function() {
     PalettePanel.init();
     ReferencePanel.init();
     OutputPanel.init();
+    AnimationPanel.init();
 
     // Init AI
     var hasKey = await AIClient.init();

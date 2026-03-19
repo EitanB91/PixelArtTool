@@ -5,8 +5,10 @@
 - v0.1.0-mvp: pushed 2026-03-15 (commit `a1f877c`)
 - v0.2.0: pushed 2026-03-15 (commit `888700f`) — O1+O2+O3+O5 complete
 - O6 Animation sprint: Phase O6-1 complete (2026-03-18) — PASS WITH NOTES
-- Tests: 87 passing ✅ (42 original + 45 new animation tests)
-- **Next: Phase O6-2 — UI Shell (Nova leads, Playwright screenshot required)**
+- O6-2 UI Shell: complete (2026-03-18) — PASS WITH NOTES
+- **O6-3 Region Workflow & Pose Generation: complete (2026-03-19) — PASS WITH NOTES**
+- Tests: 127 passing (42 original + 45 animation O6-1 + 40 region/pose O6-3)
+- **Next: Phase O6-4 — Export & Spritesheet**
 
 ## Phase 0.3 Pre-Audit — Full Findings (2026-03-14)
 
@@ -64,6 +66,7 @@
 
 - `require()` inside function bodies — happened in `trace-reference` handler. Watch for this pattern in future IPC handlers.
 - Global singleton `History` bypassed by external callers — happened in O6-1 (generate.js, enforce.js). Fix: always use `PixelCanvas.pushToHistory()`, never the global directly.
+- **CSS `.anim-only` display override — REPEAT OFFENDER (O6-2 B1 + O6-3 B1).** The CSS rule `.tool-btn.anim-only { display: none }` hides the region-paint button. Empty `style.display = ''` does NOT override it. Must use explicit `'flex'`. This has now happened TWICE. Third time → enemy action. `updateSizeGate()` is the single point of control for this button's visibility + disabled state.
 
 ## QA Run History
 
@@ -75,6 +78,8 @@
 | 2026-03-15 | Phase 7 — O1+O2+O3+O5 additions | PASS | 2 advisories fixed in-session; v0.2.0 tagged |
 | 2026-03-18 | Phase O6-1 — Architecture & Data Model (initial) | BLOCKED | B1: History singleton regression in generate.js + enforce.js |
 | 2026-03-18 | Phase O6-1 — Re-check after B1 fix | PASS WITH NOTES | B1 resolved; A1/A2 addressed; 87/87 tests green |
+| 2026-03-18 | Phase O6-2 — UI Shell | PASS WITH NOTES | B1: region button display fix; A1: dead var removed; A2: glyph cosmetic noted |
+| **2026-03-19** | **Phase O6-3 — Region Workflow & Pose Generation** | **PASS WITH NOTES** | **B1: region button display regression (SAME as O6-2 B1); A1: perf fix (refreshRegionOnly); A2: stale JSDoc. All resolved.** |
 
 ## Chain-of-Thought Prompt Change (2026-03-14)
 - `generate.js` system prompt updated: model now writes a region plan before outputting JSON
@@ -123,12 +128,54 @@
 - `tests/animation-regions.test.js` — 24 tests ✅ (region struct + size gate)
 - **Total: 87 tests, 6 suites, 0 failures**
 
+## Phase O6-2 QA Run (2026-03-18) — PASS WITH NOTES ✅
+
+**Scope:** UI Shell — animation tab HTML/CSS, tab switching, canvas layering, seed/restore, defensive guards
+**Blocking items found:** 1 (B1) — found and fixed in same session
+
+| # | File | Issue | Status |
+|---|------|-------|--------|
+| O6-2-B1 | `animation-panel.js:127` | Region paint button invisible — CSS `.tool-btn.anim-only` overrode empty `style.display` | ✅ Fixed — set to `'flex'` |
+
+**Advisories:**
+
+| # | File | Item | Status |
+|---|------|------|--------|
+| O6-2-A1 | `animation-panel.js:18` | Dead `_savedHistory` variable | ✅ Removed |
+| O6-2-A2 | `index.html:168-169` | Next-frame and Play buttons use same `▶` glyph | ⚠️ Cosmetic — noted for future polish |
+
+**Tests:** 87/87 passing, zero regressions.
+
+## Phase O6-3 QA Run (2026-03-19) — PASS WITH NOTES ✅
+
+**Scope:** Region Workflow & Pose Generation — shift engine, 6 pose generators, full AnimationPanel rewrite (frame strip, playback, region panel, apply template, onion skin, size gate), region-paint tool, CSS
+**Blocking items found:** 1 (B1) — found and fixed in same session
+**Advisories found:** 2 (A1, A2) — both resolved in same session
+
+| # | File | Issue | Status |
+|---|------|-------|--------|
+| O6-3-B1 | `animation-panel.js` | Region paint button invisible — `show()` never set `style.display = 'flex'`. Regression of O6-2-B1. | ✅ Fixed — `updateSizeGate()` now controls both display and disabled |
+
+**Advisories:**
+
+| # | File | Item | Status |
+|---|------|------|--------|
+| O6-3-A1 | `canvas.js` / `animation-panel.js` | region-paint called full `refresh()` per pixel (DOM thrash during drag) | ✅ Fixed — `refreshRegionOnly()` added |
+| O6-3-A2 | `regions.js` | Stale JSDoc on `renderOverlay()` — phantom `activeId` param | ✅ Fixed — doc cleaned |
+
+**New tests:**
+- `tests/shift-engine.test.js` — 14 tests ✅ (basic movement, clipping, bg fill, edge cases)
+- `tests/pose-generators.test.js` — 18 tests ✅ (all 6 poses verified)
+- `tests/region-workflow.test.js` — 8 tests ✅ (multi-region idle, edge cases, overlaps)
+- **Total: 127 tests, 9 suites, 0 failures**
+
 ## Viktor's Standing Notes
-- Tests: 87 passing. v0.1.0-mvp, v0.2.0, O6-1 all shipped clean.
+- Tests: 127 passing. v0.1.0-mvp, v0.2.0, O6-1, O6-2, O6-3 all shipped clean.
 - `png2sprite.js` is shared with other projects — flag any external import additions immediately.
 - API key handling: confirmed secure — key stays in main process, renderer gets only boolean + results.
 - A10 (greedy rect duplication) deferred to O7 — still open.
 - P3-A2 (eyedropper history) — code comment added, still deferred.
 - P3-A3 (trace-reference no try/catch) — still open, low priority.
-- **O6-2 gate: UI audit. Playwright screenshot is required evidence. No screenshot = no PASS.**
-- Next: Phase O6-2 — UI Shell. Nova leads HTML/CSS; Orchestrator wires tab switch + canvas layering.
+- O6-2-A2 (glyph ambiguity) — cosmetic, future polish.
+- **CSS `.anim-only` display override is a REPEAT OFFENDER. Watch for this in O6-4 and beyond.**
+- Next: Phase O6-4 — Export & Spritesheet. Viktor runs full QA pipeline.

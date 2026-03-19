@@ -1,0 +1,58 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(/c/Users/user/AppData/Roaming/npm/npm.cmd test:*)",
+      "Read(//c/Users/user/AppData/Roaming/**)",
+      "Read(//c/Program Files/nodejs//**)",
+      "Bash(\"/c/Program Files/nodejs/npm.cmd\" test)",
+      "Bash(npm test:*)",
+      "Read(//c/Users/user/.claude/projects/c--Users-user-Desktop-Ai-Claude-PixelArtTool/memory/**)",
+      "Bash(node tools/generate-icon.js)",
+      "Bash(node -e \"const fs=require\\(''fs''\\); const p=fs.readFileSync\\(''assets/icon.png''\\); console.log\\(''PNG magic bytes:'', p.slice\\(0,4\\).toString\\(''hex''\\), ''\\(should be 89504e47\\)''\\); const i=fs.readFileSync\\(''assets/icon.ico''\\); console.log\\(''ICO header:'', i.slice\\(0,6\\).toString\\(''hex''\\), ''\\(should be 000001000100\\)''\\); console.log\\(''PNG size:'', p.length, ''bytes | ICO size:'', i.length, ''bytes''\\);\")",
+      "Bash(node spike/spike.js)",
+      "Bash(find c:/Users/user/Desktop/Ai/Claude/PixelArtTool -name *spike* -o -name *animation* -o -name *frame*)",
+      "Read(//c/Users/user/.claude/plans/**)",
+      "Bash(node -e \"try { var e = require\\(''electron''\\); console.log\\(typeof e, Object.keys\\(e || {}\\)\\); } catch\\(err\\) { console.log\\(''ERR:'', err.message\\); }\")",
+      "Bash(./node_modules/.bin/electron --version)",
+      "Bash(\"/c/Users/user/Desktop/Ai/Claude/PixelArtTool/node_modules/electron/dist/electron.exe\" --version)",
+      "Skill(playwright-cli)",
+      "Skill(playwright-cli:*)",
+      "Bash(playwright-cli eval:*)",
+      "Bash(playwright-cli open:*)",
+      "Bash(playwright-cli click:*)",
+      "Bash(playwright-cli screenshot:*)",
+      "Bash(playwright-cli close:*)"
+    ],
+    "additionalDirectories": [
+      "c:\\Users\\user\\.claude\\projects\\c--Users-user-Desktop-Ai-Claude-PixelArtTool\\memory",
+      "c:\\Users\\user\\Desktop\\Ai\\Claude\\PixelArtTool\\spike",
+      "c:\\Users\\user\\Desktop\\Ai\\Claude\\PixelArtTool\\.claude\\vault-and-valve",
+      "c:\\Users\\user\\Desktop\\Ai\\Claude\\PixelArtTool\\.claude",
+      "C:\\Users\\user\\Desktop\\Ai\\Claude\\PixelArtTool\\.claude\\vault-and-valve"
+    ]
+  },
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": ".claude/hooks/session-logger.sh"
+          }
+        ]
+      }
+    ],
+    "SessionEnd": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": ".claude/hooks/session-logger.sh"
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -91,6 +91,11 @@ body {
     overflow: hidden;
 }
 
+/* When animation mode is active, shrink main layout to make room for bottom bar */
+#app.anim-mode #main-layout {
+    height: calc(100vh - 40px - 64px);
+}
+
 /* ── Toolbar ───────────────────────────────────────────────────────────────── */
 
 #toolbar {
@@ -277,3 +282,293 @@ input[type="text"] {
 }
 
 hr { border: none; border-top: 1px solid var(--border); width: 100%; }
+
+/* ── Tab bar (in topbar) ──────────────────────────────────────────────────── */
+
+.tab-bar {
+    display: flex;
+    gap: 2px;
+    margin-right: 8px;
+}
+
+.tab-btn {
+    padding: 4px 12px;
+    font-size: 11px;
+    font-weight: bold;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    background: var(--bg-control);
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+    cursor: pointer;
+    border-radius: 3px 3px 0 0;
+    transition: color 0.15s, border-color 0.15s;
+}
+
+.tab-btn:hover { color: var(--text); border-color: var(--accent); }
+.tab-btn.active {
+    color: var(--accent);
+    border-color: var(--accent);
+    border-bottom-color: var(--bg-panel);
+    background: var(--bg-panel);
+}
+
+/* ── Canvas overlay layers ────────────────────────────────────────────────── */
+
+#canvas-area { position: relative; }
+
+#onionCanvas {
+    position: absolute;
+    z-index: 1;
+    pointer-events: none;
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+    display: none;
+}
+
+#drawCanvas { position: relative; z-index: 2; }
+
+#regionCanvas {
+    position: absolute;
+    z-index: 3;
+    pointer-events: none;
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+    display: none;
+}
+
+/* ── Animation panel (right side) ─────────────────────────────────────────── */
+
+#animation-panel .anim-section {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.anim-section-label {
+    font-size: 9px;
+    color: var(--text-dim);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+}
+
+.pose-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+}
+
+.pose-chip {
+    padding: 3px 10px;
+    font-size: 10px;
+    background: var(--bg-control);
+    border: 1px solid var(--border);
+    color: var(--text);
+    cursor: pointer;
+    border-radius: 10px;
+    transition: border-color 0.15s, color 0.15s;
+}
+
+.pose-chip:hover { border-color: var(--accent); color: var(--accent); }
+.pose-chip.selected {
+    border-color: var(--accent);
+    background: var(--accent-dim);
+    color: var(--accent);
+}
+
+#btn-apply-template {
+    width: 100%;
+    padding: 5px 0;
+    font-weight: bold;
+}
+
+/* Region list */
+#region-list {
+    max-height: 100px;
+    overflow-y: auto;
+    background: var(--bg-control);
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    padding: 4px;
+    min-height: 28px;
+}
+
+.region-placeholder {
+    color: var(--text-dim);
+    font-size: 10px;
+    text-align: center;
+    padding: 4px;
+}
+
+#btn-new-region { width: 100%; }
+
+.region-row {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 4px;
+    border-radius: 2px;
+    cursor: pointer;
+    transition: background 0.1s;
+}
+
+.region-row:hover { background: rgba(255,255,255,0.05); }
+.region-row.selected { background: var(--accent-dim); border: 1px solid var(--accent); }
+
+.region-swatch {
+    width: 12px;
+    height: 12px;
+    border-radius: 2px;
+    flex-shrink: 0;
+    border: 1px solid rgba(255,255,255,0.2);
+}
+
+.region-name-input {
+    width: 60px;
+    background: transparent;
+    border: 1px solid transparent;
+    color: var(--text);
+    font-family: inherit;
+    font-size: 10px;
+    padding: 1px 3px;
+}
+
+.region-name-input:focus {
+    background: var(--bg-base);
+    border-color: var(--border);
+    outline: none;
+}
+
+.region-count {
+    font-size: 9px;
+    color: var(--text-dim);
+    flex-shrink: 0;
+    margin-left: auto;
+}
+
+.region-remove-btn {
+    width: 16px;
+    height: 16px;
+    padding: 0;
+    font-size: 12px;
+    line-height: 1;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: none;
+    color: var(--text-dim);
+    cursor: pointer;
+}
+
+.region-remove-btn:hover { color: #FF4444; }
+
+/* Region paint tool — hidden in Sprite mode */
+.tool-btn.anim-only { display: none; }
+
+/* ── Bottom bar (frame strip + playback) ──────────────────────────────────── */
+
+#bottom-bar {
+    height: 64px;
+    background: var(--bg-panel);
+    border-top: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    padding: 0 8px;
+    gap: 12px;
+}
+
+#playback-controls {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+}
+
+#playback-controls button {
+    width: 28px;
+    height: 28px;
+    font-size: 12px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#btn-play-pause {
+    width: 34px !important;
+    height: 34px !important;
+    font-size: 14px !important;
+    border-color: var(--accent);
+}
+
+#fps-select {
+    background: var(--bg-control);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 2px 4px;
+    font-family: inherit;
+    font-size: 11px;
+    cursor: pointer;
+}
+
+#frame-counter {
+    color: var(--text-dim);
+    font-size: 11px;
+    white-space: nowrap;
+    min-width: 80px;
+}
+
+/* Frame strip */
+#frame-strip {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    overflow: hidden;
+}
+
+#frame-strip-scroll {
+    display: flex;
+    gap: 6px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    flex: 1;
+    padding: 4px 0;
+}
+
+#frame-strip-scroll::-webkit-scrollbar { height: 4px; }
+#frame-strip-scroll::-webkit-scrollbar-track { background: var(--bg-base); }
+#frame-strip-scroll::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+.frame-thumb {
+    width: 40px;
+    height: 40px;
+    border: 2px solid var(--border);
+    border-radius: 3px;
+    background: var(--canvas-bg);
+    cursor: pointer;
+    flex-shrink: 0;
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+}
+
+.frame-thumb:hover { border-color: var(--text-dim); }
+.frame-thumb.active { border-color: #FFC107; }
+
+.frame-thumb-label {
+    font-size: 8px;
+    color: var(--text-dim);
+    text-align: center;
+}
+
+#btn-add-frame {
+    width: 40px;
+    height: 40px;
+    font-size: 18px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}

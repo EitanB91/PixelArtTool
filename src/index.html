@@ -13,6 +13,10 @@
         <!-- Top bar -->
         <div id="topbar">
             <span class="app-title">PIXEL ART TOOL</span>
+            <div class="tab-bar">
+                <button class="tab-btn active" data-tab="sprite">Sprite</button>
+                <button class="tab-btn" data-tab="animation">Animation</button>
+            </div>
             <div class="topbar-controls">
                 <label>W: <input type="number" id="canvas-w" value="16" min="1" max="128"> px</label>
                 <label>H: <input type="number" id="canvas-h" value="22" min="1" max="128"> px</label>
@@ -42,15 +46,63 @@
                 <button class="tool-btn" data-tool="eyedrop" title="Eyedropper (I)">💧</button>
                 <hr>
                 <div id="current-color-swatch" title="Active color"></div>
+                <hr>
+                <button class="tool-btn anim-only" data-tool="region-paint" title="Region Paint (available at 24×24+)" disabled>▓</button>
             </div>
 
             <!-- Drawing canvas area -->
             <div id="canvas-area">
+                <canvas id="onionCanvas" class="overlay-canvas"></canvas>
                 <canvas id="drawCanvas"></canvas>
+                <canvas id="regionCanvas" class="overlay-canvas"></canvas>
             </div>
 
             <!-- Right panels -->
             <div id="right-panels">
+
+                <!-- Animation panel (visible in Animation mode only) -->
+                <div class="panel anim-only" id="animation-panel" style="display:none">
+                    <div class="panel-title">ANIMATION</div>
+
+                    <!-- Pose template picker -->
+                    <div class="anim-section">
+                        <div class="anim-section-label">Character Poses</div>
+                        <div class="pose-chips">
+                            <button class="pose-chip" data-pose="idle">Idle</button>
+                            <button class="pose-chip" data-pose="walk">Walk</button>
+                            <button class="pose-chip" data-pose="jump">Jump</button>
+                        </div>
+                    </div>
+                    <div class="anim-section">
+                        <div class="anim-section-label">Object / Effect</div>
+                        <div class="pose-chips">
+                            <button class="pose-chip" data-pose="rotation">Rotation</button>
+                            <button class="pose-chip" data-pose="pulse">Pulse</button>
+                            <button class="pose-chip" data-pose="flicker">Flicker</button>
+                        </div>
+                    </div>
+                    <button id="btn-apply-template" disabled>Apply Template</button>
+
+                    <!-- Onion skin toggle -->
+                    <div class="panel-row">
+                        <label><input type="checkbox" id="onion-toggle"> Onion skin</label>
+                    </div>
+
+                    <!-- Region panel -->
+                    <div class="anim-section">
+                        <div class="anim-section-label">Regions</div>
+                        <div id="region-list">
+                            <div class="region-placeholder">No regions defined</div>
+                        </div>
+                        <button id="btn-new-region" disabled>+ New Region</button>
+                    </div>
+
+                    <!-- Background fill control -->
+                    <div class="panel-row">
+                        <label><input type="checkbox" id="bg-transparent" checked> Transparent BG</label>
+                        <input type="color" id="bg-fill-color" value="#000000" disabled title="Background fill color">
+                    </div>
+                </div>
 
                 <!-- Palette panel -->
                 <div class="panel" id="palette-panel">
@@ -106,6 +158,29 @@
                     <textarea id="export-output" readonly placeholder="pxAt() code will appear here..."></textarea>
                 </div>
 
+            </div>
+        </div>
+
+        <!-- Bottom bar: frame strip + playback controls (visible in Animation mode only) -->
+        <div id="bottom-bar" class="anim-only" style="display:none">
+            <div id="playback-controls">
+                <button id="btn-prev-frame" title="Previous frame">◀</button>
+                <button id="btn-play-pause" title="Play / Pause">▶</button>
+                <button id="btn-next-frame" title="Next frame">▶</button>
+                <select id="fps-select" title="Frames per second">
+                    <option value="1">1 fps</option>
+                    <option value="2">2 fps</option>
+                    <option value="4" selected>4 fps</option>
+                    <option value="8">8 fps</option>
+                    <option value="12">12 fps</option>
+                </select>
+                <span id="frame-counter">Frame 1 / 1</span>
+            </div>
+            <div id="frame-strip">
+                <div id="frame-strip-scroll">
+                    <!-- Frame thumbnails will be rendered here by AnimationPanel -->
+                </div>
+                <button id="btn-add-frame" title="Add new frame">+</button>
             </div>
         </div>
 

@@ -1,0 +1,117 @@
+- generic [ref=e2]:
+  - generic [ref=e3]:
+    - generic [ref=e4]: PIXEL ART TOOL
+    - generic [ref=e5]:
+      - button "Sprite" [ref=e6] [cursor=pointer]
+      - button "Animation" [active] [ref=e7] [cursor=pointer]
+    - generic [ref=e8]:
+      - generic [ref=e9]:
+        - text: "W:"
+        - 'spinbutton "W: px" [ref=e10]': "16"
+        - text: px
+      - generic [ref=e11]:
+        - text: "H:"
+        - 'spinbutton "H: px" [ref=e12]': "22"
+        - text: px
+      - combobox "Dimension presets" [ref=e13] [cursor=pointer]:
+        - option "Custom"
+        - option "16×22 (player)" [selected]
+        - option "16×16"
+        - option "8×8"
+        - option "32×32"
+        - option "64×64"
+      - generic [ref=e14]:
+        - text: "Zoom:"
+        - 'slider "Zoom: 12×" [ref=e15]': "12"
+        - generic [ref=e16]: 12×
+      - button "Clear" [ref=e17] [cursor=pointer]
+      - button "Undo (Z)" [ref=e18] [cursor=pointer]
+      - button "Redo (Y)" [ref=e19] [cursor=pointer]
+  - generic [ref=e20]:
+    - generic [ref=e21]:
+      - button "✏" [ref=e22] [cursor=pointer]
+      - button "◻" [ref=e23] [cursor=pointer]
+      - button "⬛" [ref=e24] [cursor=pointer]
+      - button "💧" [ref=e25] [cursor=pointer]
+      - separator [ref=e26]
+      - generic "Active color" [ref=e27] [cursor=pointer]
+      - separator [ref=e28]
+    - generic [ref=e31]:
+      - generic [ref=e71]:
+        - generic [ref=e72]: ANIMATION
+        - generic [ref=e73]:
+          - generic [ref=e74]: Character Poses
+          - generic [ref=e75]:
+            - button "Idle" [ref=e76] [cursor=pointer]
+            - button "Walk" [ref=e77] [cursor=pointer]
+            - button "Jump" [ref=e78] [cursor=pointer]
+        - generic [ref=e79]:
+          - generic [ref=e80]: Object / Effect
+          - generic [ref=e81]:
+            - button "Rotation" [ref=e82] [cursor=pointer]
+            - button "Pulse" [ref=e83] [cursor=pointer]
+            - button "Flicker" [ref=e84] [cursor=pointer]
+        - button "Apply Template" [disabled] [ref=e85]
+        - generic [ref=e87]:
+          - checkbox "Onion skin" [ref=e88]
+          - text: Onion skin
+        - generic [ref=e89]:
+          - generic [ref=e90]: Regions
+          - generic [ref=e92]: No regions defined
+          - button "+ New Region" [disabled] [ref=e93]
+        - generic [ref=e94]:
+          - generic [ref=e95]:
+            - checkbox "Transparent BG" [checked] [ref=e96]
+            - text: Transparent BG
+          - textbox "Background fill color" [disabled] [ref=e97] [cursor=pointer]: "#000000"
+      - generic [ref=e32]:
+        - generic [ref=e33]: PALETTE
+        - generic [ref=e34]:
+          - generic "#1A1A1A" [ref=e35] [cursor=pointer]
+          - generic "#CCCCCC" [ref=e36] [cursor=pointer]
+          - generic "#FFFFFF" [ref=e37] [cursor=pointer]
+          - generic "#FF8844" [ref=e38] [cursor=pointer]
+          - generic "#4488FF" [ref=e39] [cursor=pointer]
+          - generic "#44CC44" [ref=e40] [cursor=pointer]
+        - generic [ref=e41]:
+          - textbox [ref=e42] [cursor=pointer]: "#1a1a1a"
+          - button "+ Add" [ref=e43] [cursor=pointer]
+      - generic [ref=e44]:
+        - generic [ref=e45]: REFERENCE
+        - generic [ref=e47]: No reference loaded
+        - button "Extract Palette" [disabled] [ref=e49]
+        - generic [ref=e50]:
+          - button "Load Image" [ref=e51] [cursor=pointer]
+          - button "Trace" [ref=e52] [cursor=pointer]
+      - generic [ref=e53]:
+        - generic [ref=e54]: AI GENERATE
+        - textbox "Describe the sprite... (e.g. 'stone age cave dweller, side view, holding club')" [ref=e55]
+        - button "Generate" [ref=e57] [cursor=pointer]
+        - generic "Automatically reduce palette to 6 colors after generation" [ref=e59]:
+          - checkbox "Enforce style" [checked] [ref=e60]
+          - text: Enforce style
+      - generic [ref=e61]:
+        - generic [ref=e62]: EXPORT CODE
+        - generic [ref=e63]:
+          - generic [ref=e64]:
+            - text: "Func:"
+            - textbox "Func:" [ref=e65]: _drawSprite
+          - generic [ref=e66]:
+            - checkbox "lOff" [ref=e67]
+            - text: lOff
+        - button "Generate pxAt() Code" [ref=e68] [cursor=pointer]
+        - button "Save PNG" [ref=e69] [cursor=pointer]
+        - textbox "pxAt() code will appear here..." [ref=e70]
+  - generic [ref=e98]:
+    - generic [ref=e99]:
+      - button "◀" [ref=e100] [cursor=pointer]
+      - button "▶" [ref=e101] [cursor=pointer]
+      - button "▶" [ref=e102] [cursor=pointer]
+      - combobox "Frames per second" [ref=e103] [cursor=pointer]:
+        - option "1 fps"
+        - option "2 fps"
+        - option "4 fps" [selected]
+        - option "8 fps"
+        - option "12 fps"
+      - generic [ref=e104]: Frame 1 / 1
+    - button "+" [ref=e107] [cursor=pointer]
