@@ -55,7 +55,11 @@ window.addEventListener('DOMContentLoaded', async function() {
     btnTrace.addEventListener('click', async function() {
         btnTrace.disabled = true;
         try {
-            await AIGenerate.trace(AppState.referenceBase64, AppState.referenceExt, aiStatus);
+            await AIGenerate.trace(
+                AppState.referenceBase64, AppState.referenceExt,
+                PixelCanvas.getWidth(), PixelCanvas.getHeight(),
+                aiStatus
+            );
         } finally {
             btnTrace.disabled = false;
         }

@@ -1,6 +1,6 @@
 'use strict';
 
-// PoseTemplates — template registry and frame generator stubs
+// PoseTemplates — template registry and frame generators
 //
 // Templates generate multi-frame animations from a base sprite.
 // Each generator receives the base pixel data + optional region map and

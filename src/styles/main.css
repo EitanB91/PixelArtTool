@@ -375,6 +375,10 @@ hr { border: none; border-top: 1px solid var(--border); width: 100%; }
     background: var(--accent-dim);
     color: var(--accent);
 }
+.pose-chip.generating {
+    opacity: 0.6;
+    pointer-events: none;
+}
 
 #btn-apply-template {
     width: 100%;

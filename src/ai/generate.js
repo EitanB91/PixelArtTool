@@ -199,24 +199,19 @@ One-shot example (4×4 sprite, 3 colors):
         ];
     }
 
-    async function trace(referenceBase64, referenceExt, statusEl) {
+    async function trace(referenceBase64, referenceExt, canvasW, canvasH, statusEl) {
         if (!referenceBase64) {
             statusEl.textContent = 'Load a reference image first';
             return;
         }
         statusEl.textContent = 'Tracing...';
         try {
-            var result    = await window.api.traceReference(referenceBase64, referenceExt || 'png');
+            var result    = await window.api.traceReference(
+                referenceBase64, referenceExt || 'png', canvasW, canvasH
+            );
             var pixelData = result.pixels;
             var w         = result.w;
             var h         = result.h;
-
-            // Auto-resize canvas to match traced dimensions
-            if (PixelCanvas.getWidth() !== w || PixelCanvas.getHeight() !== h) {
-                PixelCanvas.resize(w, h);
-                document.getElementById('canvas-w').value = w;
-                document.getElementById('canvas-h').value = h;
-            }
 
             var pixels = PixelCanvas.getPixels();
             for (var i = 0; i < pixels.length && i < pixelData.length; i++) {

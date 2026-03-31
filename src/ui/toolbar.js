@@ -34,10 +34,12 @@ var Toolbar = (function() {
 
         // Canvas size
         document.getElementById('canvas-w').addEventListener('change', function() {
+            if (!_confirmResizeInAnimMode()) { this.value = PixelCanvas.getWidth(); return; }
             document.getElementById('size-preset').value = '';
             _resizeCanvas();
         });
         document.getElementById('canvas-h').addEventListener('change', function() {
+            if (!_confirmResizeInAnimMode()) { this.value = PixelCanvas.getHeight(); return; }
             document.getElementById('size-preset').value = '';
             _resizeCanvas();
         });
@@ -46,6 +48,7 @@ var Toolbar = (function() {
         document.getElementById('size-preset').addEventListener('change', function() {
             var val = this.value;
             if (!val) return;
+            if (!_confirmResizeInAnimMode()) { this.value = ''; return; }
             var parts = val.split('x');
             var w = parseInt(parts[0]);
             var h = parseInt(parts[1]);
@@ -55,6 +58,18 @@ var Toolbar = (function() {
         });
 
         refreshColorSwatch();
+    }
+
+    // Resize guard (O6-4 Activity 4.16): warn if resizing would destroy animation frames.
+    // Returns true if resize should proceed, false to cancel.
+    function _confirmResizeInAnimMode() {
+        if (AppState.animationMode && window.AnimFrames && AnimFrames.getFrameCount() > 1) {
+            return confirm(
+                'Resizing the canvas will destroy all ' + AnimFrames.getFrameCount() +
+                ' animation frames.\n\nAre you sure you want to resize?'
+            );
+        }
+        return true;
     }
 
     function _resizeCanvas() {

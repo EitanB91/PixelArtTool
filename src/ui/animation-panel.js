@@ -132,7 +132,7 @@ var AnimationPanel = (function() {
         // ── Onion skin toggle ────────────────────────────────────────────────
         _els.onionToggle.addEventListener('change', function() {
             if (_els.onionToggle.checked) {
-                _els.onionCanvas.style.display = '';
+                _els.onionCanvas.style.display = 'block';
                 renderOnionSkin();
             } else {
                 _els.onionCanvas.style.display = 'none';
@@ -202,6 +202,12 @@ var AnimationPanel = (function() {
         if (!selectedChip) return;
         var poseId = selectedChip.dataset.pose;
 
+        // Show loading state on Apply button (Activity 4.15)
+        var prevText = _els.btnApply.textContent;
+        _els.btnApply.textContent = 'Generating\u2026';
+        _els.btnApply.disabled = true;
+        selectedChip.classList.add('generating');
+
         // Save current canvas to frame 0 before generating
         _saveCurrentFrame();
 
@@ -229,6 +235,13 @@ var AnimationPanel = (function() {
 
         // Navigate to frame 0
         _navigateToFrame(0);
+
+        // Restore Apply button after a brief flash so user sees the state change
+        setTimeout(function() {
+            _els.btnApply.textContent = prevText;
+            _els.btnApply.disabled = false;
+            selectedChip.classList.remove('generating');
+        }, 300);
     }
 
     // ── Show (enter animation mode) ──────────────────────────────────────────
@@ -446,7 +459,7 @@ var AnimationPanel = (function() {
         }
 
         ctx.globalAlpha = 1.0;
-        _els.onionCanvas.style.display = '';
+        _els.onionCanvas.style.display = 'block';
     }
 
     function _drawOnionFrame(ctx, pixels, w, h, zoom) {
@@ -488,6 +501,10 @@ var AnimationPanel = (function() {
             nameInput.value = region.name;
             nameInput.placeholder = 'name...';
             nameInput.dataset.regionId = region.id;
+            // Stop click propagation so row handler doesn't rebuild DOM mid-edit
+            nameInput.addEventListener('click', function(e) {
+                e.stopPropagation();
+            });
             nameInput.addEventListener('change', (function(rid) {
                 return function(e) {
                     var r = AnimRegions.getById(rid);
@@ -538,7 +555,7 @@ var AnimationPanel = (function() {
             _els.regionCanvas.style.display = 'none';
             return;
         }
-        _els.regionCanvas.style.display = '';
+        _els.regionCanvas.style.display = 'block';
         var ctx = _els.regionCanvas.getContext('2d');
         var zoom = parseInt(document.getElementById('zoom-slider').value) || 12;
         AnimRegions.renderOverlay(ctx, zoom);

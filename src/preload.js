@@ -9,6 +9,6 @@ contextBridge.exposeInMainWorld('api', {
     copyToClipboard: (text) => ipcRenderer.invoke('copy-to-clipboard', text),
     checkApiKey:     () => ipcRenderer.invoke('check-api-key'),
     callClaude:      (messages, maxTokens, system) => ipcRenderer.invoke('call-claude', messages, maxTokens, system),
-    traceReference:  (base64, ext) => ipcRenderer.invoke('trace-reference', base64, ext),
+    traceReference:  (base64, ext, w, h) => ipcRenderer.invoke('trace-reference', base64, ext, w, h),
     extractPalette:  (base64, ext) => ipcRenderer.invoke('extract-palette', base64, ext)
 });

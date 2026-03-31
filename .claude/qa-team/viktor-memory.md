@@ -169,13 +169,29 @@
 - `tests/region-workflow.test.js` — 8 tests ✅ (multi-region idle, edge cases, overlaps)
 - **Total: 127 tests, 9 suites, 0 failures**
 
+## Phase O6-4 QA Run (2026-03-31) — PASS WITH NOTES ✅
+
+**Scope:** Pose Template Engine — targeted functional audit. Resize guard (new), loading indicator (new), full template/playback/onion verification.
+**Blocking items found:** 0
+**Advisories found:** 2 — both resolved same session
+
+| # | File | Item | Status |
+|---|------|------|--------|
+| O6-4-A1 | `toolbar.js` | Resize guard cancel left stale value in input field — next resize read wrong dimension | ✅ Fixed — input reverted to current canvas size on cancel |
+| O6-4-A2 | `pose-templates.js:3` | Header comment said "stubs" but generators are fully implemented | ✅ Fixed — updated to "generators" |
+
+**Onion skin note:** Uses original colors at reduced opacity (20%/10%) not blue/orange tint from plan. Accepted — was shipped in O6-3.
+
+**Tests:** 127/127 passing, zero regressions.
+
 ## Viktor's Standing Notes
-- Tests: 127 passing. v0.1.0-mvp, v0.2.0, O6-1, O6-2, O6-3 all shipped clean.
+- Tests: 127 passing. v0.1.0-mvp, v0.2.0, O6-1, O6-2, O6-3, O6-4 all shipped clean.
 - `png2sprite.js` is shared with other projects — flag any external import additions immediately.
 - API key handling: confirmed secure — key stays in main process, renderer gets only boolean + results.
 - A10 (greedy rect duplication) deferred to O7 — still open.
 - P3-A2 (eyedropper history) — code comment added, still deferred.
 - P3-A3 (trace-reference no try/catch) — still open, low priority.
 - O6-2-A2 (glyph ambiguity) — cosmetic, future polish.
-- **CSS `.anim-only` display override is a REPEAT OFFENDER. Watch for this in O6-4 and beyond.**
-- Next: Phase O6-4 — Export & Spritesheet. Viktor runs full QA pipeline.
+- **CSS `.anim-only` display override is a REPEAT OFFENDER. Watch for this in O6-5 and beyond.**
+- **Resize guard: all 3 paths (W input, H input, preset dropdown) covered. Input reverts on cancel.**
+- Next: Phase O6-5 — Export & Integration. Viktor runs full QA pipeline.

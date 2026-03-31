@@ -2,10 +2,25 @@
 
 ## Current Project
 **Pixel Art Tool** — v0.2.0 shipped. O6 Animation sprint in progress.
-**Phase O6-3 complete (2026-03-19).** Phase O6-4 (Export & Spritesheet) is next.
+**Phase O6-4 complete (2026-03-31).** Director live test (Activity 4.21) is next, then Phase O6-5 (Export & Spritesheet).
 
 ## Active Phase
-**O6-4 — Export & Spritesheet**
+**O6-4 — Pose Template Engine — COMPLETE (pending Director live test)**
+- All 6 templates implemented and tested (Idle, Walk, Jump, Rotation, Pulse, Flicker)
+- No-region fallbacks working for all character templates
+- Template picker → Apply → frame generation pipeline fully wired
+- Frame strip thumbnails, click navigation, Play/Pause, FPS selector all working
+- Onion skinning (prev=20%, next=10%) + toggle working
+- Resize guard dialog on all 3 resize paths (width, height, preset)
+- Loading indicator on Apply button (300ms flash)
+- Viktor audit: PASS WITH NOTES → both advisories (A1 stale input, A2 stale comment) fixed
+- 127 tests passing, zero regressions
+- Playwright screenshots saved to tests/screenshots/
+
+**Next: Activity 4.21 — Director live test session, then O6-5 (Export & Spritesheet)**
+
+## Upcoming Phase
+**O6-5 — Export & Integration**
 - Extend exporter.js for multi-frame pxAt() code generation
 - Spritesheet PNG export (horizontal strip)
 - Update output-panel.js for animation export buttons
@@ -27,6 +42,12 @@
 - **O6-2 UI: tabs in topbar (not separate row), frame strip + playback in bottom bar, animation panel at top of right panels**
 - **O6-3 pose generators: region-based (by name lookup) with no-region fallbacks. Character poses look for 'head', 'torso', 'left-arm', 'right-arm', 'left-leg', 'right-leg'. Object poses (rotation, pulse, flicker) don't use regions.**
 
+## O6-4 Notes
+- O6-3 was extremely productive and pulled in nearly all O6-4 planned deliverables (4.1–4.14, 4.17)
+- O6-4 session only needed to add: resize guard (4.16), loading indicator (4.15), then verify+audit
+- Onion skin uses original colors at reduced opacity (not blue/orange tint from original plan) — accepted
+- Resize guard covers all 3 entry points; reverts input on cancel to prevent stale dimension values
+
 ## O6-3 Lessons Learned
 - **CSS `.tool-btn.anim-only { display: none }` trap:** This CSS rule hides the region-paint button by default. Any code that makes it visible MUST use explicit `style.display = 'flex'`, never empty string. This bit us in O6-2 (B1) and again in O6-3 (B1 regression). Viktor's warning: "first time is accident, second time is coincidence, third time is enemy action." **Always check display property when toggling `.anim-only` elements.**
 - **Performance during drag operations:** Calling full `refresh()` per pixel during region-paint drag was too expensive (rebuilds frame strip DOM). Solution: `refreshRegionOnly()` — lightweight path that only updates overlay + region list. Apply this pattern to any future per-pixel operation in animation mode.
@@ -38,14 +59,16 @@
 - Phase 6 (O1–O3, O5): feature complete — PASS
 - Phase O6-1 (Architecture & Data Model): 87 tests passing — PASS WITH NOTES
 - Phase O6-2 (UI Shell): 87 tests passing — PASS WITH NOTES (B1 region button display fix)
-- **Phase O6-3 (Region Workflow & Pose Generation): 127 tests passing — PASS WITH NOTES (B1 region button display regression, A1 perf fix, A2 stale JSDoc)**
+- Phase O6-3 (Region Workflow & Pose Generation): 127 tests passing — PASS WITH NOTES (B1 region button display regression, A1 perf fix, A2 stale JSDoc)
+- **Phase O6-4 (Pose Template Engine): 127 tests passing — PASS WITH NOTES (A1 stale input on resize cancel fix, A2 stale header comment fix)**
 
 ## Session Bookend Duty (V&V Layer 2)
 - At session start: read `budget-ledger.json`, give Director 1-line V&V status
 - At session end: append session summary to `usage-log.jsonl` (actors, categories, duration)
 
 ## Open Items
-- **O6-4: Export & Spritesheet — next phase.**
+- **O6-4 Activity 4.21: Director live test session — next session.**
+- **O6-5: Export & Integration — next phase after Director approval.**
 - D12: depth ordering deferred to Sprint 2 (not needed for platformer side-view)
 - D13: background fill uses transparent/bg color (industry standard)
 - O4 (AI style transfer) — deferred, post-MVP

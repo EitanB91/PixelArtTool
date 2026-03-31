@@ -169,7 +169,7 @@ ipcMain.handle('save-spritesheet', async function(event, base64Data, defaultName
 
 // ── IPC: Reference image tracing (algorithmic, no AI) ─────────────────────────
 
-ipcMain.handle('trace-reference', function(event, base64, ext) {
+ipcMain.handle('trace-reference', function(event, base64, ext, targetW, targetH) {
     // Decode via nativeImage (handles PNG, JPEG, GIF) then export to PNG for pngjs
     var mime   = (ext === 'jpg') ? 'jpeg' : ext;
     var img    = nativeImage.createFromDataURL('data:image/' + mime + ';base64,' + base64);
@@ -177,10 +177,17 @@ ipcMain.handle('trace-reference', function(event, base64, ext) {
     var srcW   = size.width;
     var srcH   = size.height;
 
-    // Auto-size: use native dimensions, clamped to 128×128 preserving aspect ratio
-    var scale = Math.min(1, Math.min(128 / srcW, 128 / srcH));
-    var dstW  = Math.max(1, Math.round(srcW * scale));
-    var dstH  = Math.max(1, Math.round(srcH * scale));
+    // Resize to target canvas dimensions if provided, else clamp to 128×128
+    // A1: parseInt guards against floats; A2: clamp to 256 max to prevent OOM
+    var dstW, dstH;
+    if (targetW > 0 && targetH > 0) {
+        dstW = Math.min(256, Math.max(1, parseInt(targetW, 10) || 1));
+        dstH = Math.min(256, Math.max(1, parseInt(targetH, 10) || 1));
+    } else {
+        var scale = Math.min(1, Math.min(128 / srcW, 128 / srcH));
+        dstW = Math.max(1, Math.round(srcW * scale));
+        dstH = Math.max(1, Math.round(srcH * scale));
+    }
 
     var parsed = PNG.sync.read(img.toPNG());
     var src    = parsed.data; // RGBA Buffer
