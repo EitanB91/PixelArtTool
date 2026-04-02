@@ -1,11 +1,17 @@
 # Orchestrator — Working Memory
 
 ## Current Project
-**Pixel Art Tool** — v0.2.0 shipped. O6 Animation sprint in progress. Preview Window evolution in progress.
-**Phase PW-3 code complete (2026-04-01).** Pending: Viktor full QA pipeline + Director live demo.
+**Pixel Art Tool** — v0.2.0 shipped. O6 Animation sprint in progress. PW Evo 1 complete + pushed.
+**Studio vision confirmed (2026-04-02):** indie game dev studio, Godot, Game One = linear action-platformer.
 
 ## Active Phase
-**PW-3 — Editor-to-Preview Sync + Polish — CODE COMPLETE (2026-04-01)**
+**Pre-Named Regions UX Fix — NEXT PRIORITY (as of 2026-04-02)**
+- Director decision D2: regions must have pre-existing names, not free-form
+- Required names: head, torso, left-arm, right-arm, left-leg, right-leg + "Add Custom" escape hatch
+- After implementation: Director live test (regions + preview together)
+- Then: O6-5 Export & Integration
+
+## Completed: PW-3 — Editor-to-Preview Sync + Polish (pushed 2026-04-02, commit 80fae58)
 - `_pushToPreview()`: serializes all frames as plain Arrays, sends via `pushFramesToPreview` IPC
 - `_pushActiveToPreview(idx)`: lightweight single-frame push with 100ms throttle (trailing push ensures final state)
 - `_clearPreview()`: sends empty frames on animation mode exit → preview shows "No animation" message
@@ -17,21 +23,15 @@
 - 127 tests passing, zero regressions
 - App launches clean, no JS errors
 
-**Viktor QA: PASS WITH NOTES (2026-04-02)**
-- B1: FPS option mismatch editor vs preview — FIXED (both now `1,2,4,6,8,12`)
-- A1: Double IPC push in btn-add-frame / _applyTemplate — FIXED (`skipPreviewPush` param)
-- A2: Dangling throttle timer on mode exit — FIXED (cleared in `hide()`)
-- All findings resolved and re-verified by Viktor. 127 tests green.
+**Viktor QA: PASS WITH NOTES (2026-04-02)** — B1 FPS mismatch + A1 double push + A2 dangling timer — all resolved.
 
-**Director live demo (2026-04-02): 4 concerns raised — push HELD pending team meeting.**
-1. Preview button UX confusion (message before anim mode)
-2. Separate window feels disconnected — consider docked panel
-3. Static sprite during playback — no movement without named regions (UX gap, not code bug)
-4. Region overlay appears to replace pixels visually (possible rendering bug) + no region undo
+**Director live demo (2026-04-02): 4 UX concerns raised → team meeting held → 5 decisions made.**
+- Point 1 (preview button UX): noted, deferred to PW Evo 2
+- Point 2 (separate window): Nova proposed Option C (dock+detach hybrid), design TBD
+- Point 3 (static sprite): root cause = free-form region names. Fix: pre-named regions (D2)
+- Point 4 (region overlay): investigated — UX perception issue, not bug. Opacity too high (50%). Fix: reduce to ~20-25%.
 
-**Decision: Option C — pause, assemble full team next session for design review.**
-**Meeting agenda saved: `plans/MEETING-PW3-REVIEW.md`**
-**Git push NOT approved — waiting on team meeting outcome.**
+**PW-3 pushed (2026-04-02, commit `80fae58`) — Director approved after team meeting.**
 
 ## O6 Animation Sprint Status
 - O6-1 through O6-4: COMPLETE
@@ -82,11 +82,19 @@
 - At session start: read `budget-ledger.json`, give Director 1-line V&V status
 - At session end: append session summary to `usage-log.jsonl` (actors, categories, duration)
 
+## Team Meeting Decisions (2026-04-02)
+| # | Decision |
+|---|----------|
+| D1 | PixelArtTool stays alive, continues development with roadmap tweaks |
+| D2 | Pre-named regions — ASAP, must live test with preview before proceeding |
+| D3 | Tech stack stays JS/Electron |
+| D4 | Game One: linear action-platformer, dark/slight-fantasy, 8-12 levels, mixed-size sprites (32×32 base, 48-64 key chars) |
+| D5 | PW-3 pushed |
+
 ## Open Items
-- **O6-4 Activity 4.21: Director live test session — still pending.**
-- **O6-5: Export & Integration — next phase after Director approval.**
-- **PW-3: Viktor PASS WITH NOTES. Director live demo raised 4 UX concerns. Push held. Team meeting next session.**
-- **Team meeting agenda: `plans/MEETING-PW3-REVIEW.md` — review Director's 4 points, roadmap, decide direction.**
+- **Pre-named regions implementation — ASAP priority (Director D2)**
+- **Region overlay opacity fix — reduce from 50% to ~20-25% (easy, do with regions work)**
+- **O6-5: Export & Integration — after regions + Director live test**
 - D12: depth ordering deferred to Sprint 2 (not needed for platformer side-view)
 - D13: background fill uses transparent/bg color (industry standard)
 - O4 (AI style transfer) — deferred, post-MVP

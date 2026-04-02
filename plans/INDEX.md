@@ -1,14 +1,23 @@
 # Plans Index — PixelArtTool
 
-All plans and roadmaps for this project. Canonical location for all planning documents.
+**Last updated:** 2026-04-02
+
+## Active Plans
 
 | File | Status | Description |
 |------|--------|-------------|
-| [ROADMAP-FULL.md](ROADMAP-FULL.md) | Active | Full project roadmap — all phases 0–7, feature registry, approval checkpoints |
-| [PLAN-O6-ANIMATION-SPRINT.md](PLAN-O6-ANIMATION-SPRINT.md) | **Active** | O6 animation sprint — full plan (6 phases, approved 2026-03-18, target v0.3.0-animation) |
-| [PLAN-O6-ANIMATION-SPRINT-EARLY-DRAFT.md](PLAN-O6-ANIMATION-SPRINT-EARLY-DRAFT.md) | Archived | Earlier O6 sprint planning draft (superseded by PLAN-O6-ANIMATION-SPRINT.md) |
-| [PLAN-MVP-V010-DRAFT.md](PLAN-MVP-V010-DRAFT.md) | Archived | Original MVP v0.1.0 plan — early draft (superseded by ROADMAP-FULL.md) |
-| [PLAN-SPRITE-PIPELINE.md](PLAN-SPRITE-PIPELINE.md) | Archived | Sprite pipeline / png2sprite.js Path B plan (implemented — tool lives in tools/png2sprite.js) |
-| [PLAN-NOVA-BOOTSTRAP.md](PLAN-NOVA-BOOTSTRAP.md) | Archived | Nova design team bootstrap + full-window canvas plan (implemented) |
-| [PLAN-PREVIEW-WINDOW.md](PLAN-PREVIEW-WINDOW.md) | **Active** | Preview Window Evolution 1 workplan — PW-1/2/3 (code complete, push held pending team review) |
-| [MEETING-PW3-REVIEW.md](MEETING-PW3-REVIEW.md) | **Pending** | Team meeting agenda — Director's live test review, 4 UX concerns, roadmap direction |
+| [ROADMAP-FULL.md](ROADMAP-FULL.md) | **Master** | Full project roadmap — feature registry, phase history, studio context, path forward |
+| [PLAN-O6-ANIMATION-SPRINT.md](PLAN-O6-ANIMATION-SPRINT.md) | **Active** | O6 animation sprint — O6-1 to O6-4 complete, pre-named regions next, O6-5 paused |
+| [PLAN-PREVIEW-WINDOW.md](PLAN-PREVIEW-WINDOW.md) | **Complete** | Preview Window Evo 1 — PW-1/2/3 shipped (commit `80fae58`). Evo 2 design TBD |
+| [MEETING-PW3-REVIEW.md](MEETING-PW3-REVIEW.md) | **Complete** | Team meeting 2026-04-02 — 5 Director decisions, studio vision, next steps |
+
+## Archive
+
+Completed/superseded plans in `archive/`:
+
+| File | Why Archived |
+|------|-------------|
+| [PLAN-MVP-V010-DRAFT.md](archive/PLAN-MVP-V010-DRAFT.md) | v0.1.0 MVP shipped 2026-03-15 |
+| [PLAN-NOVA-BOOTSTRAP.md](archive/PLAN-NOVA-BOOTSTRAP.md) | Nova design team bootstrap completed |
+| [PLAN-O6-ANIMATION-SPRINT-EARLY-DRAFT.md](archive/PLAN-O6-ANIMATION-SPRINT-EARLY-DRAFT.md) | Superseded by full O6 sprint plan |
+| [PLAN-SPRITE-PIPELINE.md](archive/PLAN-SPRITE-PIPELINE.md) | png2sprite.js pipeline implemented |

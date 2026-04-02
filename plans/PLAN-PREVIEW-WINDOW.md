@@ -1,9 +1,11 @@
 # Animation Preview Window — Evolution 1 Workplan
 
 **Created:** 2026-03-31
+**Last updated:** 2026-04-02
 **Authors:** Orchestrator + Nova (Design Lead)
-**Status:** Awaiting Director approval
+**Status:** ✅ COMPLETE — Evolution 1 shipped (commit `80fae58`, 2026-04-02). Viktor PASS WITH NOTES, all findings resolved.
 **Scope:** Evolution 1 only — basic animation preview in a separate BrowserWindow
+**Next:** Evolution 2 (docked panel with detach) — design TBD per team meeting 2026-04-02
 
 ---
 

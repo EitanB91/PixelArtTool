@@ -1,8 +1,9 @@
 # O6 Animation Sprint — Full Roadmap Plan
 
 **Created:** 2026-03-17
+**Last updated:** 2026-04-02
 **Author:** Orchestrator
-**Status:** Awaiting Director approval
+**Status:** Active — O6-1 through O6-4 complete, PW Evo 1 complete + pushed. Pre-named regions next (ASAP). O6-5 Export paused until regions UX + Director live test.
 
 ---
 
