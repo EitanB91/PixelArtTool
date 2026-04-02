@@ -53,6 +53,9 @@ var AnimationPanel = (function() {
         // Onion skin
         _els.onionToggle   = document.getElementById('onion-toggle');
 
+        // Open Preview button
+        _els.btnOpenPreview = document.getElementById('btn-open-preview');
+
         // Region panel
         _els.btnNewRegion  = document.getElementById('btn-new-region');
         _els.regionList    = document.getElementById('region-list');
@@ -117,7 +120,12 @@ var AnimationPanel = (function() {
         });
 
         _els.fpsSelect.addEventListener('change', function() {
-            Timeline.setFps(parseInt(_els.fpsSelect.value));
+            var fps = parseInt(_els.fpsSelect.value);
+            Timeline.setFps(fps);
+            // Forward FPS to preview (guard against loop)
+            if (!_syncingFps && window.api && window.api.setPreviewFps) {
+                window.api.setPreviewFps(fps);
+            }
         });
 
         // ── Add frame button ─────────────────────────────────────────────────
@@ -126,7 +134,8 @@ var AnimationPanel = (function() {
             _saveCurrentFrame();
             var newIdx = AnimFrames.addFrame(false);
             Timeline.setFrameCount(AnimFrames.getFrameCount());
-            _navigateToFrame(newIdx);
+            _navigateToFrame(newIdx, true);
+            _pushToPreview(); // full push so preview gets the new frame
         });
 
         // ── Onion skin toggle ────────────────────────────────────────────────
@@ -164,10 +173,29 @@ var AnimationPanel = (function() {
             }
         });
 
+        // ── Open Preview button ─────────────────────────────────────────────
+        _els.btnOpenPreview.addEventListener('click', function() {
+            if (window.api && window.api.openPreviewWindow) {
+                window.api.openPreviewWindow();
+            }
+        });
+
         // ── Wire Timeline frame-change callback ─────────────────────────────
         Timeline.init(function(nextIndex) {
             _navigateToFrame(nextIndex);
         });
+
+        // ── Reverse FPS sync: preview → editor (with loop guard) ────────────
+        if (window.api && window.api.onPreviewFpsChanged) {
+            window.api.onPreviewFpsChanged(function(data) {
+                var fps = data.fps;
+                if (parseInt(_els.fpsSelect.value) === fps) return; // already matching
+                _syncingFps = true;
+                _els.fpsSelect.value = fps;
+                Timeline.setFps(fps);
+                _syncingFps = false;
+            });
+        }
     }
 
     // ── Frame navigation ─────────────────────────────────────────────────────
@@ -180,7 +208,8 @@ var AnimationPanel = (function() {
     }
 
     // Navigate to a specific frame index. Updates canvas, history, and UI.
-    function _navigateToFrame(idx) {
+    // skipPreviewPush: when true, caller handles preview push (e.g. full push follows)
+    function _navigateToFrame(idx, skipPreviewPush) {
         _saveCurrentFrame();
         var frame = AnimFrames.goToFrame(idx);
         AppState.activeFrameIndex = idx;
@@ -190,6 +219,7 @@ var AnimationPanel = (function() {
         renderFrameStrip();
         if (_els.onionToggle.checked) renderOnionSkin();
         _renderRegionOverlay();
+        if (!skipPreviewPush) _pushActiveToPreview(idx);
     }
 
     // ── Apply Template ───────────────────────────────────────────────────────
@@ -233,8 +263,9 @@ var AnimationPanel = (function() {
         // Update Timeline
         Timeline.setFrameCount(AnimFrames.getFrameCount());
 
-        // Navigate to frame 0
-        _navigateToFrame(0);
+        // Navigate to frame 0, then push all frames to preview
+        _navigateToFrame(0, true);
+        _pushToPreview();
 
         // Restore Apply button after a brief flash so user sees the state change
         setTimeout(function() {
@@ -282,6 +313,9 @@ var AnimationPanel = (function() {
         _updateFrameCounter();
         renderFrameStrip();
         _renderRegionList();
+
+        // Push initial frame data to preview window (if open)
+        _pushToPreview();
     }
 
     // ── Hide (exit animation mode) ───────────────────────────────────────────
@@ -338,6 +372,15 @@ var AnimationPanel = (function() {
 
         // Reset onion skin checkbox
         _els.onionToggle.checked = false;
+
+        // Cancel any pending throttled preview push
+        if (_pendingPushTimer) {
+            clearTimeout(_pendingPushTimer);
+            _pendingPushTimer = null;
+        }
+
+        // Tell preview to show "No animation" message
+        _clearPreview();
     }
 
     // ── Canvas layering (Activity 2.12) ──────────────────────────────────────
@@ -577,6 +620,73 @@ var AnimationPanel = (function() {
         }
     }
 
+    // ── Preview sync ────────────────────────────────────────────────────────
+
+    // Throttle state for push-active (max ~10 pushes/sec)
+    var _lastPushTime = 0;
+    var _pendingPushTimer = null;
+    var _PUSH_THROTTLE_MS = 100;
+
+    // Flag to prevent FPS sync loops (editor↔preview)
+    var _syncingFps = false;
+
+    // Full frame push — used on template apply, mode enter, frame add/remove
+    function _pushToPreview() {
+        if (!window.api || !window.api.pushFramesToPreview) return;
+        var frames = AnimFrames.getAll();
+        var serialized = [];
+        for (var i = 0; i < frames.length; i++) {
+            serialized.push({ pixels: Array.from(frames[i].pixels) });
+        }
+        window.api.pushFramesToPreview({
+            frames: serialized,
+            width: AnimFrames.getWidth(),
+            height: AnimFrames.getHeight(),
+            activeIndex: AnimFrames.getActiveIndex(),
+            fps: parseInt(_els.fpsSelect.value)
+        });
+    }
+
+    // Lightweight single-frame push — used on draw strokes, frame navigation
+    function _pushActiveToPreview(frameIndex) {
+        if (!window.api || !window.api.pushActiveFrameToPreview) return;
+        var frame = AnimFrames.getAll()[frameIndex];
+        if (!frame) return;
+
+        var now = Date.now();
+        var payload = {
+            frameIndex: frameIndex,
+            pixels: Array.from(frame.pixels),
+            width: AnimFrames.getWidth(),
+            height: AnimFrames.getHeight()
+        };
+
+        if (now - _lastPushTime >= _PUSH_THROTTLE_MS) {
+            _lastPushTime = now;
+            window.api.pushActiveFrameToPreview(payload);
+        } else {
+            // Schedule trailing push so final state always arrives
+            if (_pendingPushTimer) clearTimeout(_pendingPushTimer);
+            _pendingPushTimer = setTimeout(function() {
+                _lastPushTime = Date.now();
+                _pendingPushTimer = null;
+                window.api.pushActiveFrameToPreview(payload);
+            }, _PUSH_THROTTLE_MS - (now - _lastPushTime));
+        }
+    }
+
+    // Send empty frames to preview (mode exit — shows "No animation" message)
+    function _clearPreview() {
+        if (!window.api || !window.api.pushFramesToPreview) return;
+        window.api.pushFramesToPreview({
+            frames: [],
+            width: 0,
+            height: 0,
+            activeIndex: 0,
+            fps: parseInt(_els.fpsSelect.value)
+        });
+    }
+
     // ── Helpers ──────────────────────────────────────────────────────────────
 
     function _updateFrameCounter() {
@@ -602,6 +712,7 @@ var AnimationPanel = (function() {
         if (!AppState.animationMode) return;
         _saveCurrentFrame();
         renderFrameStrip();
+        _pushActiveToPreview(AnimFrames.getActiveIndex());
     }
 
     // Lightweight region-only update — called per pixel during region-paint drag.

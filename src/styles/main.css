@@ -386,6 +386,21 @@ hr { border: none; border-top: 1px solid var(--border); width: 100%; }
     font-weight: bold;
 }
 
+#btn-open-preview {
+    width: 100%;
+    padding: 6px 0;
+    font-size: 12px;
+    font-weight: bold;
+    letter-spacing: 1px;
+    border: 1px solid var(--accent);
+    color: var(--accent);
+    background: var(--bg-control);
+}
+
+#btn-open-preview:hover {
+    background: var(--accent-dim);
+}
+
 /* Region list */
 #region-list {
     max-height: 100px;

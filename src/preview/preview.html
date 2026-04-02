@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:;">
+    <title>Preview</title>
+    <link rel="stylesheet" href="preview.css">
+</head>
+<body>
+    <div id="preview-app">
+
+        <!-- Header bar -->
+        <div id="preview-header">
+            <span class="preview-title">PREVIEW</span>
+            <div class="preview-header-controls">
+                <button id="btn-bg-mode" title="Cycle background: checkerboard / solid / black">BG</button>
+                <button id="btn-pin" title="Toggle always-on-top">PIN</button>
+            </div>
+        </div>
+
+        <!-- Stage canvas -->
+        <div id="preview-stage">
+            <canvas id="previewCanvas"></canvas>
+            <div id="preview-empty-msg">Switch to Animation mode to preview</div>
+        </div>
+
+        <!-- Playback controls -->
+        <div id="preview-controls">
+            <button id="preview-play-pause" title="Play / Pause">&#9654;</button>
+            <select id="preview-fps-select" title="Frames per second">
+                <option value="1">1 fps</option>
+                <option value="2">2 fps</option>
+                <option value="4" selected>4 fps</option>
+                <option value="6">6 fps</option>
+                <option value="8">8 fps</option>
+                <option value="12">12 fps</option>
+            </select>
+            <span id="preview-frame-counter">Frame 1 / 1</span>
+        </div>
+
+        <!-- Mini frame strip -->
+        <div id="preview-strip"></div>
+
+    </div>
+    <script src="preview.js"></script>
+</body>
+</html>

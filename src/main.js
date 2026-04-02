@@ -19,6 +19,7 @@ try {
 } catch(e) {}
 
 var mainWindow = null;
+var previewWindow = null;
 
 function createWindow() {
     mainWindow = new BrowserWindow({
@@ -50,6 +51,86 @@ app.on('window-all-closed', function() {
 
 app.on('activate', function() {
     if (BrowserWindow.getAllWindows().length === 0) createWindow();
+});
+
+// ── Preview window ───────────────────────────────────────────────────────────
+
+function createPreviewWindow() {
+    if (previewWindow) {
+        previewWindow.focus();
+        return;
+    }
+
+    previewWindow = new BrowserWindow({
+        width: 400,
+        height: 360,
+        minWidth: 300,
+        minHeight: 280,
+        backgroundColor: '#1A1A1A',
+        alwaysOnTop: false,
+        webPreferences: {
+            preload: path.join(__dirname, 'preview', 'preview-preload.js'),
+            contextIsolation: true,
+            nodeIntegration: false
+        },
+        title: 'Preview'
+    });
+
+    previewWindow.setMenuBarVisibility(false);
+    previewWindow.loadFile(path.join(__dirname, 'preview', 'preview.html'));
+
+    previewWindow.on('closed', function() {
+        previewWindow = null;
+    });
+
+    if (process.argv.includes('--dev')) {
+        previewWindow.webContents.openDevTools({ mode: 'detach' });
+    }
+}
+
+// ── IPC: Preview window channels ─────────────────────────────────────────────
+
+// Open / focus the preview window
+ipcMain.handle('preview:open', function() {
+    createPreviewWindow();
+    return true;
+});
+
+// Relay: editor → preview (full frame data)
+ipcMain.on('preview:push-frames', function(event, data) {
+    if (previewWindow && !previewWindow.isDestroyed()) {
+        previewWindow.webContents.send('preview:receive-frames', data);
+    }
+});
+
+// Relay: editor → preview (single active frame)
+ipcMain.on('preview:push-active', function(event, data) {
+    if (previewWindow && !previewWindow.isDestroyed()) {
+        previewWindow.webContents.send('preview:receive-active', data);
+    }
+});
+
+// Relay: editor → preview (FPS change)
+ipcMain.on('preview:set-fps', function(event, data) {
+    if (previewWindow && !previewWindow.isDestroyed()) {
+        previewWindow.webContents.send('preview:receive-fps', data);
+    }
+});
+
+// Preview → main: toggle always-on-top
+ipcMain.handle('preview:set-on-top', function(event, data) {
+    if (previewWindow && !previewWindow.isDestroyed()) {
+        previewWindow.setAlwaysOnTop(data.onTop);
+        return data.onTop;
+    }
+    return false;
+});
+
+// Preview → main → editor: FPS changed in preview
+ipcMain.on('preview:fps-changed', function(event, data) {
+    if (mainWindow && !mainWindow.isDestroyed()) {
+        mainWindow.webContents.send('editor:receive-preview-fps', data);
+    }
 });
 
 // ── IPC: File system ──────────────────────────────────────────────────────────

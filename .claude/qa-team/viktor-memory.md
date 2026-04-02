@@ -80,6 +80,7 @@
 | 2026-03-18 | Phase O6-1 — Re-check after B1 fix | PASS WITH NOTES | B1 resolved; A1/A2 addressed; 87/87 tests green |
 | 2026-03-18 | Phase O6-2 — UI Shell | PASS WITH NOTES | B1: region button display fix; A1: dead var removed; A2: glyph cosmetic noted |
 | **2026-03-19** | **Phase O6-3 — Region Workflow & Pose Generation** | **PASS WITH NOTES** | **B1: region button display regression (SAME as O6-2 B1); A1: perf fix (refreshRegionOnly); A2: stale JSDoc. All resolved.** |
+| **2026-04-02** | **Phase PW-3 — Editor-to-Preview Sync + Polish (full Evo 1 gate)** | **PASS WITH NOTES** | **B1: FPS option mismatch editor vs preview; A1: double IPC push; A2: dangling throttle timer. All resolved.** |
 
 ## Chain-of-Thought Prompt Change (2026-03-14)
 - `generate.js` system prompt updated: model now writes a region plan before outputting JSON
@@ -184,8 +185,22 @@
 
 **Tests:** 127/127 passing, zero regressions.
 
+## Phase PW-3 QA Run (2026-04-02) — PASS WITH NOTES ✅
+
+**Scope:** Full Preview Window Evolution 1 gate — Editor-to-Preview Sync + Polish. All preview-related code: animation-panel.js sync hooks, preview.js FPS select + empty state, preview.html, preview.css, preload.js, main.js relay handlers.
+**Blocking items found:** 1 (B1) — found and fixed same session
+**Advisories found:** 2 (A1, A2) — both fixed same session
+
+| # | File | Issue | Status |
+|---|------|-------|--------|
+| PW3-B1 | `index.html` + `preview.html` | FPS option lists mismatched — editor `1,2,4,8,12` vs preview `2,4,6,8,12`. Bidirectional sync fails silently for unmatched values. | ✅ Fixed — both now `1,2,4,6,8,12` |
+| PW3-A1 | `animation-panel.js` | Double IPC push — btn-add-frame and _applyTemplate sent active push + full push back-to-back | ✅ Fixed — `skipPreviewPush` param on `_navigateToFrame` |
+| PW3-A2 | `animation-panel.js` | Dangling throttle timer on mode exit — `_pendingPushTimer` could fire after `hide()` | ✅ Fixed — cleared in `hide()` |
+
+**Tests:** 127/127 passing, zero regressions.
+
 ## Viktor's Standing Notes
-- Tests: 127 passing. v0.1.0-mvp, v0.2.0, O6-1, O6-2, O6-3, O6-4 all shipped clean.
+- Tests: 127 passing. v0.1.0-mvp, v0.2.0, O6-1, O6-2, O6-3, O6-4, PW-3 all shipped clean.
 - `png2sprite.js` is shared with other projects — flag any external import additions immediately.
 - API key handling: confirmed secure — key stays in main process, renderer gets only boolean + results.
 - A10 (greedy rect duplication) deferred to O7 — still open.
@@ -194,4 +209,5 @@
 - O6-2-A2 (glyph ambiguity) — cosmetic, future polish.
 - **CSS `.anim-only` display override is a REPEAT OFFENDER. Watch for this in O6-5 and beyond.**
 - **Resize guard: all 3 paths (W input, H input, preset dropdown) covered. Input reverts on cancel.**
-- Next: Phase O6-5 — Export & Integration. Viktor runs full QA pipeline.
+- **FPS option lists: editor and preview MUST stay in sync. PW3-B1 proved mismatched `<select>` options cause silent sync failure.**
+- Next: Director live demo, then O6-5 — Export & Integration.
