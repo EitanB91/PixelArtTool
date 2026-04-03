@@ -97,7 +97,17 @@
                         <div id="region-list">
                             <div class="region-placeholder">No regions defined</div>
                         </div>
-                        <button id="btn-new-region" disabled>+ New Region</button>
+                        <!-- Preset values must match _PRESET_NAMES in animation-panel.js -->
+                        <select id="region-preset" disabled>
+                            <option value="" disabled selected>+ Add Region…</option>
+                            <option value="head">Head</option>
+                            <option value="torso">Torso</option>
+                            <option value="left-arm">Left Arm</option>
+                            <option value="right-arm">Right Arm</option>
+                            <option value="left-leg">Left Leg</option>
+                            <option value="right-leg">Right Leg</option>
+                            <option value="custom" disabled>+ Custom… (coming soon)</option>
+                        </select>
                     </div>
 
                     <!-- Background fill control -->
@@ -150,11 +160,12 @@
 
                 <!-- Export panel -->
                 <div class="panel" id="export-panel">
-                    <div class="panel-title">EXPORT CODE</div>
+                    <div class="panel-title" id="export-panel-title">EXPORT CODE</div>
                     <div class="panel-row">
-                        <label>Func: <input type="text" id="func-name" value="_drawSprite" style="width:120px"></label>
+                        <label id="func-name-label">Func: <input type="text" id="func-name" value="_drawSprite" style="width:120px"></label>
                         <label><input type="checkbox" id="use-loff"> lOff</label>
                     </div>
+                    <div id="func-name-hint" style="display:none; font-size:11px; color:#888; margin-bottom:4px;">Each frame exports as name_f0, _f1, ...</div>
                     <button id="btn-export">Generate pxAt() Code</button>
                     <button id="btn-copy-code" style="display:none">Copy to Clipboard</button>
                     <button id="btn-save-png">Save PNG</button>

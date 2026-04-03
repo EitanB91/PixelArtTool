@@ -419,7 +419,19 @@ hr { border: none; border-top: 1px solid var(--border); width: 100%; }
     padding: 4px;
 }
 
-#btn-new-region { width: 100%; }
+#region-preset {
+    width: 100%;
+    background: var(--bg-base);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    padding: 3px 4px;
+    font-family: inherit;
+    font-size: 10px;
+    cursor: pointer;
+}
+#region-preset:disabled { opacity: 0.4; cursor: not-allowed; }
+#region-preset option:disabled { color: var(--text-dim); }
 
 .region-row {
     display: flex;
@@ -443,7 +455,7 @@ hr { border: none; border-top: 1px solid var(--border); width: 100%; }
 }
 
 .region-name-input {
-    width: 60px;
+    flex: 1;
     background: transparent;
     border: 1px solid transparent;
     color: var(--text);
@@ -456,6 +468,16 @@ hr { border: none; border-top: 1px solid var(--border); width: 100%; }
     background: var(--bg-base);
     border-color: var(--border);
     outline: none;
+}
+
+.region-name-label {
+    font-size: 10px;
+    color: var(--text);
+    flex: 1;
+    padding: 1px 3px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .region-count {

@@ -171,8 +171,8 @@ var AnimRegions = (function() {
         var regions = getAll();
         for (var r = 0; r < regions.length; r++) {
             var region = regions[r];
-            // 50% opacity fill
-            ctx.fillStyle = region.color + '80';
+            // ~24% opacity fill (reduced from 50% per Director feedback)
+            ctx.fillStyle = region.color + '3D';
             region.pixels.forEach(function(key) {
                 var parts = key.split(',');
                 var x = parseInt(parts[0]);

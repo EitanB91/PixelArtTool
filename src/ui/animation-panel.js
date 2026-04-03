@@ -15,6 +15,10 @@ var AnimationPanel = (function() {
     // Saved canvas state from Sprite mode — restored on animation mode exit
     var _savedPixels = null;
 
+    // Pre-named region presets (D2 decision)
+    // Must stay in sync with: index.html <select id="region-preset"> options + pose-templates.js lookups
+    var _PRESET_NAMES = ['head', 'torso', 'left-arm', 'right-arm', 'left-leg', 'right-leg'];
+
     // Region overlay color cycle
     var _regionColors = [
         '#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4',
@@ -57,7 +61,7 @@ var AnimationPanel = (function() {
         _els.btnOpenPreview = document.getElementById('btn-open-preview');
 
         // Region panel
-        _els.btnNewRegion  = document.getElementById('btn-new-region');
+        _els.regionPreset  = document.getElementById('region-preset');
         _els.regionList    = document.getElementById('region-list');
 
         // Background fill
@@ -148,15 +152,40 @@ var AnimationPanel = (function() {
             }
         });
 
-        // ── Region panel: New Region button ──────────────────────────────────
-        _els.btnNewRegion.addEventListener('click', function() {
+        // ── Region panel: preset dropdown ───────────────────────────────────
+        _els.regionPreset.addEventListener('change', function() {
             if (!AppState.animationMode) return;
+            var value = _els.regionPreset.value;
+            var name = '';
+
+            if (value === 'custom') {
+                name = (prompt('Region name:') || '').trim();
+                if (!name) {
+                    // User cancelled — reset dropdown
+                    _els.regionPreset.value = '';
+                    return;
+                }
+                // Block custom names that duplicate a preset (Viktor A1)
+                if (_PRESET_NAMES.indexOf(name.toLowerCase()) !== -1) {
+                    alert('Use the preset option for "' + name + '" instead.');
+                    _els.regionPreset.value = '';
+                    return;
+                }
+            } else {
+                name = value; // preset name (e.g. 'head', 'torso')
+            }
+
             var color = _regionColors[_regionColorIdx % _regionColors.length];
             _regionColorIdx++;
-            var region = AnimRegions.addRegion('', color);
+            var region = AnimRegions.addRegion(name, color);
             AppState.activeRegionId = region.id;
+
+            // Reset dropdown back to placeholder
+            _els.regionPreset.value = '';
+
             _renderRegionList();
             _renderRegionOverlay();
+            _syncPresetDropdown();
         });
 
         // ── Background fill toggle ───────────────────────────────────────────
@@ -280,20 +309,30 @@ var AnimationPanel = (function() {
     function show() {
         if (AppState.animationMode) return;
         AppState.animationMode = true;
-        AppState.activeFrameIndex = 0;
 
         // Save current canvas state so we can restore on exit
         _savedPixels = new Uint8ClampedArray(PixelCanvas.getPixels());
 
-        // Seed AnimFrames with current canvas pixels
-        AnimFrames.seed(
-            PixelCanvas.getPixels(),
-            PixelCanvas.getWidth(),
-            PixelCanvas.getHeight()
-        );
-
-        // Swap canvas history to frame 0's per-frame history
-        PixelCanvas.setHistory(AnimFrames.getCurrentHistory());
+        // 6.1b: Check for cached animation data with matching dimensions
+        var w = PixelCanvas.getWidth();
+        var h = PixelCanvas.getHeight();
+        if (AnimFrames.getFrameCount() > 0 && AnimFrames.getWidth() === w && AnimFrames.getHeight() === h) {
+            // Restore from cache — navigate to the previously active frame
+            var idx = AppState.activeFrameIndex;
+            if (idx >= AnimFrames.getFrameCount()) idx = 0;
+            AppState.activeFrameIndex = idx;
+            var frame = AnimFrames.goToFrame(idx);
+            PixelCanvas.applyPixels(new Uint8ClampedArray(frame.pixels));
+            PixelCanvas.setHistory(frame.history);
+        } else {
+            // No cache or dimensions changed — seed fresh
+            AppState.activeFrameIndex = 0;
+            AnimRegions.clear();
+            _regionColorIdx = 0;
+            AppState.activeRegionId = null;
+            AnimFrames.seed(PixelCanvas.getPixels(), w, h);
+            PixelCanvas.setHistory(AnimFrames.getCurrentHistory());
+        }
 
         // Update Timeline frame count
         Timeline.setFrameCount(AnimFrames.getFrameCount());
@@ -313,6 +352,10 @@ var AnimationPanel = (function() {
         _updateFrameCounter();
         renderFrameStrip();
         _renderRegionList();
+        _syncPresetDropdown();
+
+        // Update export panel labels for animation mode
+        OutputPanel.updateMode(true);
 
         // Push initial frame data to preview window (if open)
         _pushToPreview();
@@ -324,8 +367,11 @@ var AnimationPanel = (function() {
         if (!AppState.animationMode) return;
 
         // Defensive guard: stop playback to prevent interval leak (Activity 2.14)
+        // 6.1b: pause only — do NOT call Timeline.reset() which destroys _onFrameChange callback (Viktor B1)
         Timeline.pause();
-        Timeline.reset();
+
+        // 6.1b: Save current frame pixels before leaving so edits are preserved
+        _saveCurrentFrame();
 
         // Restore saved canvas pixels from before animation mode
         if (_savedPixels) {
@@ -336,13 +382,10 @@ var AnimationPanel = (function() {
         // Restore the default (non-frame) history instance
         PixelCanvas.setHistory(makeHistory());
 
-        // Reset animation + region state
-        AnimFrames.reset();
-        AnimRegions.clear();
-        _regionColorIdx = 0;
+        // 6.1b: Do NOT reset AnimFrames or AnimRegions — persist for re-entry.
+        // Keep _regionColorIdx, AppState.activeFrameIndex, AppState.activeRegionId.
+        // Only cleared on explicit New/resize via clearCache().
         AppState.animationMode = false;
-        AppState.activeFrameIndex = 0;
-        AppState.activeRegionId = null;
 
         // Revert tool to pencil if region-paint was active
         if (AppState.tool === 'region-paint') {
@@ -370,6 +413,12 @@ var AnimationPanel = (function() {
         _els.poseChips.forEach(function(c) { c.classList.remove('selected'); });
         _els.btnApply.disabled = true;
 
+        // Reset region preset dropdown
+        if (_els.regionPreset) {
+            _els.regionPreset.value = '';
+            _syncPresetDropdown();
+        }
+
         // Reset onion skin checkbox
         _els.onionToggle.checked = false;
 
@@ -378,6 +427,9 @@ var AnimationPanel = (function() {
             clearTimeout(_pendingPushTimer);
             _pendingPushTimer = null;
         }
+
+        // Restore export panel labels for sprite mode
+        OutputPanel.updateMode(false);
 
         // Tell preview to show "No animation" message
         _clearPreview();
@@ -530,6 +582,8 @@ var AnimationPanel = (function() {
         _els.regionList.innerHTML = '';
         for (var i = 0; i < regions.length; i++) {
             var region = regions[i];
+            var isPreset = _PRESET_NAMES.indexOf(region.name) !== -1;
+
             var row = document.createElement('div');
             row.className = 'region-row' + (region.id === AppState.activeRegionId ? ' selected' : '');
             row.dataset.regionId = region.id;
@@ -538,22 +592,29 @@ var AnimationPanel = (function() {
             swatch.className = 'region-swatch';
             swatch.style.background = region.color;
 
-            var nameInput = document.createElement('input');
-            nameInput.type = 'text';
-            nameInput.className = 'region-name-input';
-            nameInput.value = region.name;
-            nameInput.placeholder = 'name...';
-            nameInput.dataset.regionId = region.id;
-            // Stop click propagation so row handler doesn't rebuild DOM mid-edit
-            nameInput.addEventListener('click', function(e) {
-                e.stopPropagation();
-            });
-            nameInput.addEventListener('change', (function(rid) {
-                return function(e) {
-                    var r = AnimRegions.getById(rid);
-                    if (r) r.name = e.target.value;
-                };
-            })(region.id));
+            // Preset names: static label. Custom names: editable input.
+            var nameEl;
+            if (isPreset) {
+                nameEl = document.createElement('span');
+                nameEl.className = 'region-name-label';
+                nameEl.textContent = region.name;
+            } else {
+                nameEl = document.createElement('input');
+                nameEl.type = 'text';
+                nameEl.className = 'region-name-input';
+                nameEl.value = region.name;
+                nameEl.placeholder = 'name...';
+                nameEl.dataset.regionId = region.id;
+                nameEl.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                });
+                nameEl.addEventListener('change', (function(rid) {
+                    return function(e) {
+                        var r = AnimRegions.getById(rid);
+                        if (r) r.name = e.target.value;
+                    };
+                })(region.id));
+            }
 
             var countLabel = document.createElement('span');
             countLabel.className = 'region-count';
@@ -572,6 +633,7 @@ var AnimationPanel = (function() {
                     }
                     _renderRegionList();
                     _renderRegionOverlay();
+                    _syncPresetDropdown();
                 };
             })(region.id));
 
@@ -584,7 +646,7 @@ var AnimationPanel = (function() {
             })(region.id));
 
             row.appendChild(swatch);
-            row.appendChild(nameInput);
+            row.appendChild(nameEl);
             row.appendChild(countLabel);
             row.appendChild(removeBtn);
             _els.regionList.appendChild(row);
@@ -604,6 +666,25 @@ var AnimationPanel = (function() {
         AnimRegions.renderOverlay(ctx, zoom);
     }
 
+    // ── Preset dropdown sync ────────────────────────────────────────────────
+
+    // Disable preset options that are already in use, re-enable removed ones.
+    function _syncPresetDropdown() {
+        if (!_els.regionPreset) return;
+        var regions = AnimRegions.getAll();
+        var usedNames = {};
+        for (var i = 0; i < regions.length; i++) {
+            usedNames[regions[i].name] = true;
+        }
+        var options = _els.regionPreset.options;
+        for (var o = 0; o < options.length; o++) {
+            var val = options[o].value;
+            if (val && val !== 'custom') {
+                options[o].disabled = !!usedNames[val];
+            }
+        }
+    }
+
     // ── Size gate ────────────────────────────────────────────────────────────
 
     function updateSizeGate(w, h) {
@@ -615,8 +696,8 @@ var AnimationPanel = (function() {
                 ? 'Region Paint'
                 : 'Region Paint (available at 24\u00D724+)';
         }
-        if (_els.btnNewRegion) {
-            _els.btnNewRegion.disabled = !open;
+        if (_els.regionPreset) {
+            _els.regionPreset.disabled = !open;
         }
     }
 
@@ -723,6 +804,24 @@ var AnimationPanel = (function() {
         _renderRegionList();
     }
 
+    // 6.1b: Clear cached animation state. Called on explicit New/Resize — not on tab switch.
+    // Guarded: no-op in animation mode to prevent wiping data while UI is live (Viktor A1).
+    function clearCache() {
+        if (AppState.animationMode) return;
+        AnimFrames.reset();
+        AnimRegions.clear();
+        Timeline.pause();
+        Timeline.setFrameCount(1);
+        _regionColorIdx = 0;
+        AppState.activeFrameIndex = 0;
+        AppState.activeRegionId = null;
+    }
+
+    // 6.1b: Check if animation data is cached (for resize guard in sprite mode).
+    function hasCache() {
+        return !AppState.animationMode && AnimFrames.getFrameCount() > 0;
+    }
+
     return {
         init,
         show,
@@ -732,6 +831,8 @@ var AnimationPanel = (function() {
         updateSizeGate,
         refresh,
         syncAfterDraw,
-        refreshRegionOnly
+        refreshRegionOnly,
+        clearCache,
+        hasCache
     };
 })();

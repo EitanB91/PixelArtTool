@@ -1,43 +1,47 @@
 # Orchestrator — Working Memory
 
 ## Current Project
-**Pixel Art Tool** — v0.2.0 shipped. O6 Animation sprint in progress. PW Evo 1 complete + pushed.
+**Pixel Art Tool** — v0.2.0 shipped. O6 Animation sprint in progress. O6-5 complete, O6-6 next.
 **Studio vision confirmed (2026-04-02):** indie game dev studio, Godot, Game One = linear action-platformer.
 
 ## Active Phase
-**Pre-Named Regions UX Fix — NEXT PRIORITY (as of 2026-04-02)**
-- Director decision D2: regions must have pre-existing names, not free-form
-- Required names: head, torso, left-arm, right-arm, left-leg, right-leg + "Add Custom" escape hatch
-- After implementation: Director live test (regions + preview together)
-- Then: O6-5 Export & Integration
+**O6-6 Full QA Gate + Release — NEXT (as of 2026-04-03)**
+- O6-5 Export & Integration complete — Director live-tested, zero comments, Viktor PASS WITH NOTES (A1+A2 resolved)
+- O6-6 is the final phase: Viktor full pipeline, state persistence (6.1b), final live test, memory updates, v0.3.0-animation tag
+
+## Completed: O6-5 Export & Integration — 2026-04-03
+- Refactored `exporter.js`: extracted `_toHex` and `_generateFromPixels` as shared core
+- `Exporter.generateMultiFrame(baseName, useLoff, frames, w, h)`: N frames → `baseName_f0`, `_f1`... with `// Frame N` headers
+- 1-frame special case: no `_f0` suffix (Viktor V9)
+- `Exporter.toSpritesheetBase64(frames, w, h)`: horizontal strip compositor via offscreen canvas
+- Empty-array guards on both new methods (Viktor A2)
+- `OutputPanel` rewritten for dual-mode: `updateMode(isAnim)` switches title, buttons, hint, placeholder
+- Flash timer race fix: `_saveTimer` + `_copyTimer` cleared on mode switch (Viktor A1)
+- `AnimationPanel.show()`/`hide()` calls `OutputPanel.updateMode()`
+- HTML: added `id="export-panel-title"`, `id="func-name-label"`, hint div `id="func-name-hint"`
+- Reuses existing `save-png` and `copy-to-clipboard` IPC — no new channels
+- `animation-export.test.js`: 10 new tests (multi-frame naming, 1-frame, lOff, empty frame, spritesheet math)
+- 137 tests passing, 10 suites, zero failures
+- Viktor QA: PASS WITH NOTES — A1 (save button label race) + A2 (empty array guard) — both resolved
+- Director live demo: all exit criteria met, zero comments
+
+## Completed: Pre-Named Regions (D2) — 2026-04-02
+- Replaced free-form `+ New Region` button with `<select id="region-preset">` dropdown
+- 6 presets: head, torso, left-arm, right-arm, left-leg, right-leg
+- Custom escape hatch: greyed out for now (`prompt()` doesn't fire in Electron renderer) — future discussion
+- `_syncPresetDropdown()`: disables used names, re-enables on remove
+- Preset regions get static labels, custom regions get editable inputs
+- Overlay opacity: 50% → ~24% (hex `80` → `3D`)
+- Viktor QA: PASS WITH NOTES — 4 advisory items, all resolved
 
 ## Completed: PW-3 — Editor-to-Preview Sync + Polish (pushed 2026-04-02, commit 80fae58)
-- `_pushToPreview()`: serializes all frames as plain Arrays, sends via `pushFramesToPreview` IPC
-- `_pushActiveToPreview(idx)`: lightweight single-frame push with 100ms throttle (trailing push ensures final state)
-- `_clearPreview()`: sends empty frames on animation mode exit → preview shows "No animation" message
-- Hooked into: `syncAfterDraw()` (draw strokes), `_navigateToFrame()` (frame nav), `_applyTemplate()` (template apply), `show()` (mode enter), `hide()` (mode exit), `btn-add-frame` (add frame)
-- Bidirectional FPS sync: editor `fpsSelect` → `preview:set-fps` → preview. Preview FPS select → `preview:fps-changed` → editor `fpsSelect` + `Timeline.setFps()`. Loop guard via `_syncingFps` flag in both windows.
-- Preview FPS display upgraded from static `<span>` to `<select>` dropdown (2/4/6/8/12 fps options)
-- Edge cases handled: preview opened before anim mode (shows message), preview closed mid-edit (IPC silently no-ops via main.js guard), rapid draw throttle (100ms min interval + trailing push)
-- CSS: styled `#preview-fps-select` with dark theme, hover/focus accent border
-- 127 tests passing, zero regressions
-- App launches clean, no JS errors
-
-**Viktor QA: PASS WITH NOTES (2026-04-02)** — B1 FPS mismatch + A1 double push + A2 dangling timer — all resolved.
-
-**Director live demo (2026-04-02): 4 UX concerns raised → team meeting held → 5 decisions made.**
-- Point 1 (preview button UX): noted, deferred to PW Evo 2
-- Point 2 (separate window): Nova proposed Option C (dock+detach hybrid), design TBD
-- Point 3 (static sprite): root cause = free-form region names. Fix: pre-named regions (D2)
-- Point 4 (region overlay): investigated — UX perception issue, not bug. Opacity too high (50%). Fix: reduce to ~20-25%.
-
-**PW-3 pushed (2026-04-02, commit `80fae58`) — Director approved after team meeting.**
+- Full editor-to-preview sync, bidirectional FPS, throttled push
+- Viktor QA: PASS WITH NOTES — B1+A1+A2 all resolved
 
 ## O6 Animation Sprint Status
-- O6-1 through O6-4: COMPLETE
-- O6-4 Director live test (Activity 4.21): still pending
-- O6-5 (Export & Integration): pending — after Director approval
-- Preview Window (PW evolution): PW-1 complete, PW-2 complete, PW-3 complete (Viktor PASS WITH NOTES)
+- O6-1 through O6-5: COMPLETE
+- O6-6 (Full QA Gate + Release): NEXT
+- Preview Window (PW evolution): PW-1 through PW-3 complete
 
 ## Key Decisions On Record
 - AI generation scoped to simple sprites; complex characters use Trace Reference (Option F post-MVP)
@@ -52,31 +56,33 @@
 - **O6 history model: Option A — per-frame undo. `makeHistory()` factory in history.js.**
 - **External pixel mutators (generate.js, enforce.js) call `PixelCanvas.pushToHistory()` — never the global `History` singleton.**
 - **O6-2 UI: tabs in topbar (not separate row), frame strip + playback in bottom bar, animation panel at top of right panels**
-- **O6-3 pose generators: region-based (by name lookup) with no-region fallbacks. Character poses look for 'head', 'torso', 'left-arm', 'right-arm', 'left-leg', 'right-leg'. Object poses (rotation, pulse, flicker) don't use regions.**
+- **O6-3 pose generators: region-based (by name lookup) with no-region fallbacks.**
 - **Preview window is self-contained: own HTML/CSS/JS, own preload, no shared renderer modules.**
 - **IPC namespace: `preview:*` for editor→preview, `editor:*` for preview→editor reverse relay.**
 - **Preview is read-only: never writes to frame data. One-way data push from editor.**
 - **Director complimented Nova's preview design (2026-04-01) — keep that layout direction.**
+- **Export: 1-frame animation uses base name only (no _f0 suffix) — Viktor V9.**
 
 ## Environment Issue (Pre-existing)
 - `ELECTRON_RUN_AS_NODE=1` is set in Claude Code's shell environment, which prevents Electron from launching as a desktop app. Must `unset ELECTRON_RUN_AS_NODE` before `npm start`. Not a code issue — environment-level.
 
 ## O6-3 Lessons Learned
-- **CSS `.tool-btn.anim-only { display: none }` trap:** This CSS rule hides the region-paint button by default. Any code that makes it visible MUST use explicit `style.display = 'flex'`, never empty string. This bit us in O6-2 (B1) and again in O6-3 (B1 regression). Viktor's warning: "first time is accident, second time is coincidence, third time is enemy action." **Always check display property when toggling `.anim-only` elements.**
-- **Performance during drag operations:** Calling full `refresh()` per pixel during region-paint drag was too expensive (rebuilds frame strip DOM). Solution: `refreshRegionOnly()` — lightweight path that only updates overlay + region list. Apply this pattern to any future per-pixel operation in animation mode.
-- **Shift engine design:** Read-clear-write three-phase approach works cleanly. Multiple sequential shifts on the same pixel array can cause inter-region conflicts (region A writes into region B's space). D12 depth ordering in Sprint 2 will address this.
+- **CSS `.tool-btn.anim-only { display: none }` trap:** Must use explicit `style.display = 'flex'`, never empty string.
+- **Performance during drag operations:** `refreshRegionOnly()` — lightweight path for per-pixel ops.
+- **Shift engine design:** Read-clear-write three-phase approach. D12 depth ordering deferred to Sprint 2.
 
 ## QA History
 - Phase 3: 42 unit tests passing — PASS
 - Phase 5: docs complete — PASS
 - Phase 6 (O1–O3, O5): feature complete — PASS
-- Phase O6-1 (Architecture & Data Model): 87 tests passing — PASS WITH NOTES
-- Phase O6-2 (UI Shell): 87 tests passing — PASS WITH NOTES (B1 region button display fix)
-- Phase O6-3 (Region Workflow & Pose Generation): 127 tests passing — PASS WITH NOTES (B1 region button display regression, A1 perf fix, A2 stale JSDoc)
-- **Phase O6-4 (Pose Template Engine): 127 tests passing — PASS WITH NOTES (A1 stale input on resize cancel fix, A2 stale header comment fix)**
-- **Phase PW-1 (Preview Infrastructure): 127 tests passing — smoke check PASS (no Viktor audit yet)**
-- **Phase PW-2 (Preview Rendering + Playback): 127 tests passing — smoke check PASS (no Viktor audit yet, full QA at PW-3)**
-- **Phase PW-3 (Editor-to-Preview Sync + Polish): 127 tests passing — Viktor PASS WITH NOTES (B1+A1+A2 all resolved)**
+- Phase O6-1: 87 tests — PASS WITH NOTES
+- Phase O6-2: 87 tests — PASS WITH NOTES
+- Phase O6-3: 127 tests — PASS WITH NOTES
+- Phase O6-4: 127 tests — PASS WITH NOTES
+- Phase PW-1/PW-2: 127 tests — smoke check PASS
+- Phase PW-3: 127 tests — Viktor PASS WITH NOTES
+- Pre-Named Regions (D2): 127 tests — Viktor PASS WITH NOTES
+- **Phase O6-5: 137 tests — Viktor PASS WITH NOTES (A1 label race + A2 empty guard — both resolved)**
 
 ## Session Bookend Duty (V&V Layer 2)
 - At session start: read `budget-ledger.json`, give Director 1-line V&V status
@@ -92,9 +98,9 @@
 | D5 | PW-3 pushed |
 
 ## Open Items
-- **Pre-named regions implementation — ASAP priority (Director D2)**
-- **Region overlay opacity fix — reduce from 50% to ~20-25% (easy, do with regions work)**
-- **O6-5: Export & Integration — after regions + Director live test**
+- **O6-6: Full QA Gate + Release — NEXT**
+- **O6-6 Activity 6.1b: Persist animation state across tab switches (Option A)**
+- Custom region escape hatch — greyed out, `prompt()` broken in Electron renderer, future discussion
 - D12: depth ordering deferred to Sprint 2 (not needed for platformer side-view)
 - D13: background fill uses transparent/bg color (industry standard)
 - O4 (AI style transfer) — deferred, post-MVP
@@ -106,7 +112,7 @@
   - O6-2-A2: Next-frame and Play buttons use same `▶` glyph — cosmetic, future polish
 
 ## Plans Directory
-All plan and roadmap files live in `plans/` at project root. Canonical copies with meaningful names:
+All plan and roadmap files live in `plans/` at project root.
 
 | File | Description |
 |------|-------------|

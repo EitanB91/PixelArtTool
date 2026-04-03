@@ -3,7 +3,7 @@
 **Created:** 2026-03-17
 **Last updated:** 2026-04-02
 **Author:** Orchestrator
-**Status:** Active — O6-1 through O6-4 complete, PW Evo 1 complete + pushed. Pre-named regions next (ASAP). O6-5 Export paused until regions UX + Director live test.
+**Status:** Active — O6-1 through O6-4 complete, PW Evo 1 complete + pushed. Pre-named regions done (D2). O6-5 Export next. State persistence (Option A) slotted in O6-6 Activity 6.1b.
 
 ---
 
@@ -474,7 +474,8 @@ issues resolved. Director conducts final live test session. Memory files updated
 | # | Activity | Who | Output |
 |---|----------|-----|--------|
 | 6.1 | Viktor **full 8-step QA pipeline** — entire O6 feature set | Viktor | Structured report to Director |
-| 6.2 | Bug fixes: all blocking issues flagged by Viktor | Orchestrator + Nova | Fixed files, re-reviewed by Viktor |
+| 6.1b | **Persist animation state across tab switches** — keep frames + regions in memory on Sprite↔Animation switch. Only reset on explicit New/resize. (Option A, Director decision 2026-04-02) | Orchestrator | No data loss on accidental tab switch |
+| 6.2 | Bug fixes: all blocking issues flagged by Viktor + 6.1b | Orchestrator + Nova | Fixed files, re-reviewed by Viktor |
 | 6.3 | Viktor re-audits fixed items, issues final verdict | Viktor | PASS / PASS WITH NOTES / BLOCKED |
 | 6.4 | Director final live test session — full end-to-end walkthrough (30 min) | Director | ✅ Approval Checkpoint #O6-7 (Final) |
 | 6.5 | Orchestrator updates `orchestrator-memory.md` | Orchestrator | O6 complete, Sprint 2 deferred items |
@@ -493,6 +494,7 @@ issues resolved. Director conducts final live test session. Memory files updated
 | V3 | Shift engine: pixel lands at correct position, out-of-bounds clipped, background fill applied |
 | V4 | Playback: rapid Play/Pause 10× — no setInterval leak (CPU stable) |
 | V5 | Tab switch mid-playback: Timeline.pause() called, pixels restored to current frame |
+| V5b | Tab switch Anim→Sprite→Anim: frames, regions, and painted pixels fully preserved |
 | V6 | Apply template twice: replaces frames (no duplication), comment in code confirms intent |
 | V7 | Undo on frame 2 does not affect frame 1 (per-frame history, if Option A) |
 | V8 | Resize canvas in animation mode with > 1 frame: warn dialog appears, no silent data loss |

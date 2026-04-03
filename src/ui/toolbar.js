@@ -13,6 +13,8 @@ var Toolbar = (function() {
         document.getElementById('btn-clear').addEventListener('click', function() {
             PixelCanvas.clear();
             ReferencePanel.clearReference();
+            // 6.1b: clear cached animation data on explicit New
+            if (window.AnimationPanel) AnimationPanel.clearCache();
         });
 
         document.getElementById('btn-undo').addEventListener('click', function() {
@@ -54,18 +56,22 @@ var Toolbar = (function() {
             var h = parseInt(parts[1]);
             document.getElementById('canvas-w').value = w;
             document.getElementById('canvas-h').value = h;
+            if (window.AnimationPanel) AnimationPanel.clearCache();
             PixelCanvas.resize(w, h);
         });
 
         refreshColorSwatch();
     }
 
-    // Resize guard (O6-4 Activity 4.16): warn if resizing would destroy animation frames.
-    // Returns true if resize should proceed, false to cancel.
+    // Resize guard (O6-4 Activity 4.16 + 6.1b): warn if resizing would destroy animation data.
+    // Now also checks for cached animation data in sprite mode.
     function _confirmResizeInAnimMode() {
-        if (AppState.animationMode && window.AnimFrames && AnimFrames.getFrameCount() > 1) {
+        var hasAnimData = (AppState.animationMode && window.AnimFrames && AnimFrames.getFrameCount() > 1)
+            || (window.AnimationPanel && AnimationPanel.hasCache());
+        if (hasAnimData) {
+            var count = window.AnimFrames ? AnimFrames.getFrameCount() : 0;
             return confirm(
-                'Resizing the canvas will destroy all ' + AnimFrames.getFrameCount() +
+                'Resizing the canvas will destroy all ' + count +
                 ' animation frames.\n\nAre you sure you want to resize?'
             );
         }
@@ -75,6 +81,8 @@ var Toolbar = (function() {
     function _resizeCanvas() {
         var w = Math.max(1, Math.min(128, parseInt(document.getElementById('canvas-w').value) || 16));
         var h = Math.max(1, Math.min(128, parseInt(document.getElementById('canvas-h').value) || 22));
+        // 6.1b: clear cached animation data on resize
+        if (window.AnimationPanel) AnimationPanel.clearCache();
         PixelCanvas.resize(w, h);
     }
 
